@@ -1,0 +1,72 @@
+import React from "react";
+import { Link } from "react-router-dom";
+
+const platforms = [
+  {
+    name: "LeetCode",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/1/19/LeetCode_logo_black.png",
+  },
+  {
+    name: "Codeforces",
+    logo: "https://tinyurl.com/mvywhztr",
+  },
+  {
+    name: "CodeChef",
+    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEcv_WJfqB-tC3ZFADRoUMMMTtOA6ZzyAA6g&s",
+  },
+  {
+    name: "TopCoder",
+    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8zAQWiyyKXkXygCCWUz_01xvVCxWOCpTsjQ&s",
+  },
+  {
+    name: "CS Academy",
+    logo: "https://csacademy.com/app/static/round/favicon.png",
+  },
+  {
+    name: "HackerEarth",
+    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxTmatQgSjbS7EcoYLY1dPCjPwqOBmSvEwHg&s",
+  },
+  {
+    name: "HackerRank",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/6/65/HackerRank_logo.png",
+  },
+  {
+    name: "Kick Start",
+    logo: "https://media.licdn.com/dms/image/v2/C560BAQGXNaIkf2kBwQ/company-logo_200_200/company-logo_200_200/0/1631426665528/kickstartcoding_logo?e=2147483647&v=beta&t=hcOpZAQiqGKmJHi5lo_00B2wX2td6Kb-ZufAMMg5reo",
+  },
+];
+
+export default function ContestInfo() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-gray-100 dark:from-black dark:via-gray-900 dark:to-gray-800 text-black dark:text-white px-6 py-16">
+      <div className="max-w-4xl mx-auto text-center">
+        <h1 className="text-4xl sm:text-5xl font-extrabold mb-6">
+          Select a Platform to See Contest Details
+        </h1>
+        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-xl mx-auto mb-12">
+          Choose your favorite coding platform below and start practicing by
+          exploring upcoming contests and challenges.
+        </p>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 justify-center">
+          {platforms.map(({ name, logo }) => (
+            <Link
+              key={name}
+              to={`/contestinfo/${name.toLowerCase()}`}
+              className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:shadow-lg transition"
+            >
+              <img
+                src={logo}
+                alt={`${name} Logo`}
+                className="h-20 w-20 object-contain"
+              />
+              <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                {name}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
