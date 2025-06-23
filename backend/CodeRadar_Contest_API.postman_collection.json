@@ -1,0 +1,461 @@
+{
+	"info": {
+		"_postman_id": "12345678-abcd-1234-5678-123456789abc",
+		"name": "CodeRadar Contest API",
+		"description": "Complete API collection for testing CodeRadar Contest endpoints - fetches contests from all major competitive programming platforms",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Contest Management",
+			"item": [
+				{
+					"name": "Get All Contests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests"]
+						},
+						"description": "Fetch all contests from all platforms stored in the database"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Upcoming Contests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/upcoming",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "upcoming"]
+						},
+						"description": "Get only future contests (contests that haven't started yet)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Active Contests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/active",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "active"]
+						},
+						"description": "Get contests that are currently running"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Contest Statistics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/stats",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "stats"]
+						},
+						"description": "Get comprehensive statistics about contests including counts by platform"
+					},
+					"response": []
+				},
+				{
+					"name": "Manual Refresh All Contests",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/refresh",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "refresh"]
+						},
+						"description": "Manually trigger fetching contests from all platforms immediately"
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/health",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "health"]
+						},
+						"description": "Check if the contest service is running properly"
+					},
+					"response": []
+				}
+			],
+			"description": "General contest management endpoints"
+		},
+		{
+			"name": "Platform Specific Contests",
+			"item": [
+				{
+					"name": "Get Codeforces Contests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/platform/Codeforces",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "platform", "Codeforces"]
+						},
+						"description": "Get all Codeforces contests (past and future)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get CodeChef Contests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/platform/CodeChef",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "platform", "CodeChef"]
+						},
+						"description": "Get all CodeChef contests (past and future)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get AtCoder Contests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/platform/AtCoder",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "platform", "AtCoder"]
+						},
+						"description": "Get all AtCoder contests (past and future)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get LeetCode Contests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/platform/LeetCode",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "platform", "LeetCode"]
+						},
+						"description": "Get all LeetCode contests (past and future)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get HackerRank Contests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/platform/HackerRank",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "platform", "HackerRank"]
+						},
+						"description": "Get all HackerRank contests (past and future)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get HackerEarth Contests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/platform/HackerEarth",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "platform", "HackerEarth"]
+						},
+						"description": "Get all HackerEarth contests (past and future)"
+					},
+					"response": []
+				}
+			],
+			"description": "Platform-specific contest endpoints"
+		},
+		{
+			"name": "Upcoming Contests by Platform",
+			"item": [
+				{
+					"name": "Upcoming Codeforces Contests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/upcoming/platform/Codeforces",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "upcoming", "platform", "Codeforces"]
+						},
+						"description": "Get only upcoming Codeforces contests"
+					},
+					"response": []
+				},
+				{
+					"name": "Upcoming CodeChef Contests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/upcoming/platform/CodeChef",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "upcoming", "platform", "CodeChef"]
+						},
+						"description": "Get only upcoming CodeChef contests"
+					},
+					"response": []
+				},
+				{
+					"name": "Upcoming AtCoder Contests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/upcoming/platform/AtCoder",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "upcoming", "platform", "AtCoder"]
+						},
+						"description": "Get only upcoming AtCoder contests"
+					},
+					"response": []
+				},
+				{
+					"name": "Upcoming LeetCode Contests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/upcoming/platform/LeetCode",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "upcoming", "platform", "LeetCode"]
+						},
+						"description": "Get only upcoming LeetCode contests"
+					},
+					"response": []
+				},
+				{
+					"name": "Upcoming HackerRank Contests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/upcoming/platform/HackerRank",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "upcoming", "platform", "HackerRank"]
+						},
+						"description": "Get only upcoming HackerRank contests"
+					},
+					"response": []
+				},
+				{
+					"name": "Upcoming HackerEarth Contests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/upcoming/platform/HackerEarth",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "upcoming", "platform", "HackerEarth"]
+						},
+						"description": "Get only upcoming HackerEarth contests"
+					},
+					"response": []
+				}
+			],
+			"description": "Get only upcoming contests from specific platforms"
+		},
+		{
+			"name": "Advanced Filtering",
+			"item": [
+				{
+					"name": "Multiple Platforms",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/platforms?platforms=Codeforces,CodeChef,AtCoder",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "platforms"],
+							"query": [
+								{
+									"key": "platforms",
+									"value": "Codeforces,CodeChef,AtCoder",
+									"description": "Comma-separated list of platforms"
+								}
+							]
+						},
+						"description": "Get contests from multiple specific platforms"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Contests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/search?query=Round",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "search"],
+							"query": [
+								{
+									"key": "query",
+									"value": "Round",
+									"description": "Search term to find in contest names"
+								}
+							]
+						},
+						"description": "Search for contests by name containing specific text"
+					},
+					"response": []
+				},
+				{
+					"name": "Contests in Date Range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/range?startTime=2025-06-21T00:00:00&endTime=2025-06-30T23:59:59",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "range"],
+							"query": [
+								{
+									"key": "startTime",
+									"value": "2025-06-21T00:00:00",
+									"description": "Start date in ISO format"
+								},
+								{
+									"key": "endTime",
+									"value": "2025-06-30T23:59:59",
+									"description": "End date in ISO format"
+								}
+							]
+						},
+						"description": "Get contests within a specific date range"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Available Platforms",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/platforms/list",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "platforms", "list"]
+						},
+						"description": "Get list of all supported platforms"
+					},
+					"response": []
+				}
+			],
+			"description": "Advanced filtering and search capabilities"
+		},
+		{
+			"name": "Contest CRUD Operations",
+			"item": [
+				{
+					"name": "Get Contest by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/{{contest_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "{{contest_id}}"]
+						},
+						"description": "Get a specific contest by its ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create New Contest",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Custom Contest\",\n    \"platform\": \"Custom\",\n    \"url\": \"https://example.com/contest\",\n    \"startTime\": \"2025-06-25T14:00:00\",\n    \"endTime\": \"2025-06-25T16:00:00\",\n    \"durationMinutes\": 120,\n    \"description\": \"A custom contest for testing\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/contests",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests"]
+						},
+						"description": "Create a new contest manually"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Contest",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Contest Name\",\n    \"platform\": \"Custom\",\n    \"url\": \"https://example.com/updated-contest\",\n    \"startTime\": \"2025-06-25T15:00:00\",\n    \"endTime\": \"2025-06-25T17:00:00\",\n    \"durationMinutes\": 120,\n    \"description\": \"Updated contest description\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/contests/{{contest_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "{{contest_id}}"]
+						},
+						"description": "Update an existing contest"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Contest",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/contests/{{contest_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "contests", "{{contest_id}}"]
+						},
+						"description": "Delete a contest by ID"
+					},
+					"response": []
+				}
+			],
+			"description": "Create, Read, Update, Delete operations for contests"
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "contest_id",
+			"value": "your_contest_id_here",
+			"type": "string",
+			"description": "Replace with actual contest ID from database"
+		}
+	]
+}
