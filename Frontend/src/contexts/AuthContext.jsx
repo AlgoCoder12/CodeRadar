@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Create the AuthContext
 const AuthContext = createContext();
@@ -11,7 +12,8 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token")?localStorage.getItem("token"):null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const url = "http://localhost:8080";
 
@@ -21,14 +23,25 @@ export const AuthProvider = ({ children }) => {
     try {
       // console.log(data);
       setLoading(true)
-        const response = await axios.post(`${url}/api/auth/register`, {username: data.email, ...data});
-        const {user, token} = response;
+      const formData = new FormData();
+
+      const obj = {
+        username: data.email,
+        email: data.email,
+        fullName: data.fullName,
+        password: data.password
+      }
+
+        const response = await axios.post(`${url}/api/auth/register`, obj);
+        // console.log(response)
+        const {user, token} = response.data;
+      // console.log(token, user)
         if (user) {
           setUser(user);
         }
         if(token) {
-          setToken(token)
           localStorage.setItem("token", token)
+          setToken(token)
         }
     } catch (error) {
         console.log(error)
@@ -43,10 +56,11 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       const response = await axios.post(`${url}/api/auth/login`, userData);
       const {token, user} = response.data;
-      console.log(response)
+      
+
       if (token) {
-        setToken(token);
         localStorage.setItem("token", token)
+        setToken(token);
       }
       if (user) {
         setUser(user);
@@ -62,6 +76,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setToken(null);
+    localStorage.removeItem("token");
   };
 
   const getCurrentUser = async () => {
@@ -72,7 +87,7 @@ export const AuthProvider = ({ children }) => {
       const user = response.data;
       if (user) {
         setUser(user);
-        
+        navigate("/")
       }
     } catch (error) {
       console.log(error)

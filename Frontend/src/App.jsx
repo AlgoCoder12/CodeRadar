@@ -64,7 +64,7 @@ export default function App() {
   }
 
   return (
-    <Router>
+    <div>
       <Layout
         user={user}
         loggedIn={!!user}
@@ -97,6 +97,6 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>
-    </Router>
+    </div>
   );
 }

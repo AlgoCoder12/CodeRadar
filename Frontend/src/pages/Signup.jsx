@@ -47,12 +47,10 @@ function Signup() {
     setError("");
     try {
       // Create account with authService (make sure your method name is correct)
-      console.log(data)
+      // console.log(data)
       await signup(data);
       // After creating account, get current user data
-      if (user) {
-        navigate("/");
-      } else {
+      if (!user) {
         setError("Failed to retrieve user data after account creation.");
       }
 
