@@ -1,6 +1,6 @@
 package com.AlgoAlert.CodeRadar.dto;
 
-
+import com.AlgoAlert.CodeRadar.model.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,4 +12,6 @@ import lombok.NoArgsConstructor;
 public class AuthResponse {
     @JsonProperty("token")
     private String jwtToken;
+    @JsonProperty("user")
+    private User user;
 }

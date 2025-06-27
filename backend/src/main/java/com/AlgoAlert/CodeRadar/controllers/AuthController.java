@@ -1,6 +1,7 @@
 package com.AlgoAlert.CodeRadar.controllers;
 
 
+import com.AlgoAlert.CodeRadar.dto.AuthResponse;
 import com.AlgoAlert.CodeRadar.dto.LoginRequest;
 import com.AlgoAlert.CodeRadar.model.User;
 import com.AlgoAlert.CodeRadar.services.UserDetailsServiceImpl;
@@ -15,40 +16,47 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
-public class AuthController {
+@CrossOrigin(origins = "*")
+public class
+AuthController {
 
     @Autowired
     private UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) throws Exception {
-        User existingUser = (User) userService.findByUsername(user.getUsername());
-        if (existingUser != null) {
-            System.out.println("User already exists");
-            return ResponseEntity.badRequest().body("User already exists");
+    public ResponseEntity<?> register(@RequestBody User user) {
+        try {
+            User existingUser = userService.findByUsername(user.getUsername());
+            if (existingUser != null) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
+            }
+            String rawPassword = user.getPassword();
+            userService.saveUser(user);
+            User savedUser = userService.findByUsername(user.getUsername());
+            String token = userService.verify(savedUser.getUsername(), rawPassword);
+            if (token == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to generate token after registration");
+            }
+            return ResponseEntity.status(HttpStatus.CREATED).body(new AuthResponse(token, savedUser));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Registration failed: " + e.getMessage());
         }
-
-        userService.saveUser(user);
-        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest req) throws Exception {
-
-        User user = req.getUsername() != null ? userService.findByUsername(req.getUsername()) : userService.findByEmail(req.getEmail());
-
-        if (user == null) {
-            System.out.println("User not found");
-            return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> login(@RequestBody LoginRequest req) {
+        try {
+            User user = req.getUsername() != null ? userService.findByUsername(req.getUsername()) : userService.findByEmail(req.getEmail());
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+            String token = userService.verify(user.getUsername(), req.getPassword());
+            if (token == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            }
+            return ResponseEntity.ok(new AuthResponse(token, user));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Login failed: " + e.getMessage());
         }
-        String token = userService.verify(user.getUsername(), req.getPassword());
-
-        if (token == null) {
-            System.out.println("Invalid credentials");
-            return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
-        }
-
-
-        return new ResponseEntity<>(token, HttpStatus.OK);
     }
 }

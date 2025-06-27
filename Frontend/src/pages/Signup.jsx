@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import authservice from "../service/appwrite/auth"; // adjust path if needed
 import { Link, useNavigate } from "react-router-dom";
-import { login as authLogin } from "../store/authSlice";
-import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
+import { useAuth } from "../contexts/AuthContext";
 
 // Simple Input and Button components for demo (replace with your UI components)
 function Input({ label, error, ...props }) {
@@ -34,7 +32,8 @@ function Button({ children, ...props }) {
 
 function Signup() {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+
+  const {user, signup} = useAuth();
 
   const {
     register,
@@ -48,17 +47,15 @@ function Signup() {
     setError("");
     try {
       // Create account with authService (make sure your method name is correct)
-      await authservice.createAccount(data);
-
+      console.log(data)
+      await signup(data);
       // After creating account, get current user data
-      const userData = await authservice.getCurrentUser();
-
-      if (userData) {
-        dispatch(authLogin(userData));
+      if (user) {
         navigate("/");
       } else {
         setError("Failed to retrieve user data after account creation.");
       }
+
     } catch (err) {
       setError(err.message || "Account creation failed.");
     }
@@ -92,7 +89,7 @@ function Signup() {
           <Input
             label="Full Name"
             placeholder="Enter your full name"
-            {...register("name", {
+            {...register("fullName", {
               required: "Full name is required",
               minLength: { value: 2, message: "Name must be at least 2 characters" },
             })}

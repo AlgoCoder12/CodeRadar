@@ -7,12 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder; // Import for building URLs with parameters
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI; // Import for URI
+import java.net.URI;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors; // For Java 8+ stream operations
+import java.util.stream.Collectors;
 
 @Service
 public class CodeforcesService {
@@ -20,7 +20,7 @@ public class CodeforcesService {
     private static final String API_URL = "https://codeforces.com/api/problemset.problems";
     private static final String CODEFORCES_PROBLEM_BASE_URL = "https://codeforces.com/problemset/problem/";
 
-    @Autowired
+   @Autowired
     private RestTemplate restTemplate;
 
     // A simple mapping for common tags (you might want a more comprehensive map or enum)

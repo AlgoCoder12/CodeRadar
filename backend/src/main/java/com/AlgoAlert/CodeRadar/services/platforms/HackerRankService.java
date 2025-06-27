@@ -14,7 +14,6 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 @Service
 public class HackerRankService {
@@ -22,7 +21,7 @@ public class HackerRankService {
     private static final String API_URL = "https://www.hackerrank.com/rest/contests/master/challenges";
     private static final String HACKERRANK_BASE_PROBLEM_URL = "https://www.hackerrank.com/challenges/";
 
-    @Autowired
+   @Autowired
     private RestTemplate restTemplate;
 
     public ExternalProblemDTO getDailyProblem() {

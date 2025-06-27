@@ -15,7 +15,7 @@ public class LeetCodeService {
     
     private static final String API_URL = "https://leetcode.com/graphql";
     
-    @Autowired
+   @Autowired
     private RestTemplate restTemplate;
     
     @Autowired

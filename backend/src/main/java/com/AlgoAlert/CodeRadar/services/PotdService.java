@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class PotdService {
@@ -21,9 +19,8 @@ public class PotdService {
     
     @Autowired
     private GeeksForGeeksService geeksForGeeksService;
-    
-    @Autowired
-    private AtCoderService atCoderService;
+
+
     
     @Autowired
     private CodeChefService codeChefService;
@@ -31,18 +28,14 @@ public class PotdService {
     @Autowired
     private HackerRankService hackerRankService;
 
-    @Autowired
-    private HackerEarthService hackerEarthService;
 
     public ExternalProblemDTO getProblemByPlatform(String platform) {
         return switch (Platform.valueOf(platform.toUpperCase())) {
             case LEETCODE -> leetCodeService.getDailyProblem();
             case CODEFORCES -> codeforcesService.getDailyProblem();
             case GEEKSFORGEEKS -> geeksForGeeksService.getDailyProblem();
-            case ATCODER -> atCoderService.getDailyProblem();
             case CODECHEF -> codeChefService.getDailyProblem();
             case HACKERRANK -> hackerRankService.getDailyProblem();
-            case HACKEREARTH -> hackerEarthService.getDailyProblem();
         };
     }
 
@@ -56,7 +49,6 @@ public class PotdService {
             leetCodeService.getDailyProblem(),
             codeforcesService.getDailyProblem(),
             geeksForGeeksService.getDailyProblem(),
-            atCoderService.getDailyProblem(),
             codeChefService.getDailyProblem(),
             hackerRankService.getDailyProblem()
         ).stream()

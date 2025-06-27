@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useCode } from "../contexts/CodeContext";
 
 // Mock contest data per platform
 const mockContests = {
@@ -57,7 +58,18 @@ function formatDateTime(datetimeStr) {
 
 export default function ContestPlatformPage() {
   const { platform } = useParams();
-  const contests = mockContests[platform] || [];
+  // const contests = mockContests[platform] || [];
+  const {contests, fetchContestsByPlatform} = useCode();
+
+  useEffect(() => {
+    const fetchContests = async (name) => {
+      await fetchContestsByPlatform(name);
+    }
+    fetchContests(platform);
+  }, [platform])
+
+  // console.log("contests", contests);
+
   const [filterDate, setFilterDate] = useState("");
   const [filteredContests, setFilteredContests] = useState(contests);
 
@@ -67,7 +79,7 @@ export default function ContestPlatformPage() {
     } else {
       setFilteredContests(
         contests.filter((contest) => {
-          const contestDate = new Date(contest.startDate).toISOString().slice(0, 10);
+          const contestDate = new Date(contest.startTime).toISOString().slice(0, 10);
           return contestDate === filterDate;
         })
       );
@@ -165,8 +177,8 @@ export default function ContestPlatformPage() {
                     {contest.name}
                   </h2>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    <strong>Starts:</strong> {formatDateTime(contest.startDate)} <br />
-                    <strong>Ends:</strong> {formatDateTime(contest.endDate)}
+                    <strong>Starts:</strong> {formatDateTime(contest.startTime)} <br />
+                    <strong>Ends:</strong> {formatDateTime(contest.endTime)}
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 mt-4 sm:mt-0 items-start sm:items-center">

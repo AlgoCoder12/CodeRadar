@@ -24,17 +24,17 @@ import static io.jsonwebtoken.Jwts.*;
 @Component
 public class JWTService {
 
-    private String secretKey = "";
+    private String secretKey = "lL1Qexe9FLsn37nplIkWroTOxvdr0/tntEx825WnApdnDOSDQZk0PoLfcZS306n3iMslaeOelKRN+Kvwf+dP29dLKsN7VVkK+vVfHg44iMlhyTGtjH1aPjSb8VeF4pZ2xEki7208afNzBHjt+rNlZe5lyWgTK3S30cIBtBvN+91pifn1fWFY0y1YuCxokoippY498CMteZxv0wSIhC9X/D0WZhTvohmB3izYKhIQdaxx/47Vr02TvYh5IINh6iTdkJ9fS0WD0tDdnfvsj20HbHUCWV4m9Pl4o1mSOma2ZUEzhLyRYDM3nkEI97nO0TI2fCewKrm7j4AdZ+5Pl7hX"; //to be changed later
 
-    public JWTService() {
-        try {
-            KeyGenerator keyGen = KeyGenerator.getInstance("hmacSHA256");
-            SecretKey sk = keyGen.generateKey();
-            secretKey = Base64.getEncoder().encodeToString(sk.getEncoded());
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    // public JWTService() {
+    //     try {
+    //         KeyGenerator keyGen = KeyGenerator.getInstance("hmacSHA256");
+    //         SecretKey sk = keyGen.generateKey();
+    //         secretKey = Base64.getEncoder().encodeToString(sk.getEncoded());
+    //     } catch (NoSuchAlgorithmException e) {
+    //         throw new RuntimeException(e);
+    //     }
+    // }
 
     public String generateToken(String username) {
         Map<String, Object> claims = new HashMap<>();
@@ -44,7 +44,7 @@ public class JWTService {
                 .add(claims)
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 24 * 60 *60 * 30))
+                .expiration(new Date(System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000))
                 .and()
                 .signWith(getKey())
                 .compact();

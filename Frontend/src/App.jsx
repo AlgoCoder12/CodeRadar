@@ -1,4 +1,3 @@
-import authservice from "./service/appwrite/auth"; // Ensure this is correctly imported
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
@@ -9,37 +8,39 @@ import ContestInfo from "./pages/ContestInfo";
 import ContestPlatformPage from "./pages/ContestPlatformPage";
 import POTD from "./pages/POTD";
 import Signup from "./pages/SignUp";
+import { useAuth } from "./contexts/AuthContext";
+
+
 export default function App() {
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem("darkMode");
     return saved === "true" || false;
   });
 
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // ✅ new
+  const {user, loading} = useAuth();
+  // console.log(user, loading)
 
   // Load user on mount
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const currentUser = await authservice.getCurrentUser();
-        if (currentUser) {
-          setUser(currentUser);
-          setLoggedIn(true);
-          localStorage.setItem("loggedIn", "true");
-          localStorage.setItem("user", JSON.stringify(currentUser));
-        } else {
-          setLoggedIn(false);
-        }
-      } catch (err) {
-        setLoggedIn(false);
-      } finally {
-        setLoading(false); // ✅ auth is initialized
-      }
-    };
-    loadUser();
-  }, []);
+  // useEffect(() => {
+  //   const loadUser = async () => {
+  //     try {
+  //       const currentUser = await authservice.getCurrentUser();
+  //       if (currentUser) {
+  //         setUser(currentUser);
+  //         setLoggedIn(true);
+  //         localStorage.setItem("loggedIn", "true");
+  //         localStorage.setItem("user", JSON.stringify(currentUser));
+  //       } else {
+  //         setLoggedIn(false);
+  //       }
+  //     } catch (err) {
+  //       setLoggedIn(false);
+  //     } finally {
+  //       setLoading(false); // ✅ auth is initialized
+  //     }
+  //   };
+  //   loadUser();
+  // }, []);
 
   // Sync dark mode to localStorage
   useEffect(() => {
@@ -49,10 +50,10 @@ export default function App() {
   }, [darkMode]);
 
   useEffect(() => {
-    if (!loggedIn) {
+    if (!user) {
       localStorage.removeItem("user");
     }
-  }, [loggedIn]);
+  }, [user]);
 
   if (loading) {
     return (
@@ -66,34 +67,33 @@ export default function App() {
     <Router>
       <Layout
         user={user}
-        loggedIn={loggedIn}
-        setLoggedIn={setLoggedIn}
+        loggedIn={!!user}
         darkMode={darkMode}
         setDarkMode={setDarkMode}
       >
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          {/* <Route
-            path="/login"
-            element={
-              loggedIn ? (
-                <Navigate to="/" replace />
-              ) : (
-                <LoginPage setUser={setUser} setLoggedIn={setLoggedIn} />
-              )
-            }
-          /> */}
           <Route
             path="/dashboard"
             element={
-              loggedIn ? <DashboardPage user={user} /> : <Navigate to="/login" replace />
+              user ? <DashboardPage user={user} /> : <Navigate to="/login" replace />
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              user ? <Navigate to="/dashboard" replace /> : <LoginPage />
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              user ? <Navigate to="/dashboard" replace /> : <Signup />
             }
           />
           <Route path="/contestinfo" element={<ContestInfo />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/contestinfo/:platform" element={<ContestPlatformPage />} />
+          <Route path="/contest-info/:platform" element={<ContestPlatformPage />} />
           <Route path="/potd" element={<POTD />} />
-          <Route path="/login" element={<LoginPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { login as authLogin } from "../store/authSlice";
-import { useDispatch } from "react-redux";
 
-import authservice from "../service/appwrite/auth"; // Adjust path as needed
 import { useForm } from "react-hook-form";
+import { useAuth } from "../contexts/AuthContext";
 
 // Replace Input and Button below with your UI components or basic HTML inputs/buttons
 // For example purpose, I'll use simple inputs and buttons here:
@@ -37,7 +35,8 @@ function Button({ children, ...props }) {
 
 function LoginPage() {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  
+  const {user, login} = useAuth();
 
   const {
     register,
@@ -51,13 +50,9 @@ function LoginPage() {
     setError("");
     try {
       // Call login on authService, passing { email, password }
-      await authservice.login(data);
-
+      await login(data);
       // After successful login, get current user info
-      const userData = await authservice.getCurrentUser();
-
-      if (userData) {
-        dispatch(authLogin(userData));
+      if (user) {
         navigate("/");
       } else {
         setError("Failed to retrieve user data after login.");

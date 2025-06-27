@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useCode } from "../contexts/CodeContext";
 
 const platforms = [
   {
@@ -7,7 +8,7 @@ const platforms = [
     logo: "https://upload.wikimedia.org/wikipedia/commons/1/19/LeetCode_logo_black.png",
   },
   {
-    name: "Codeforces",
+    name: "CodeForces",
     logo: "https://tinyurl.com/mvywhztr",
   },
   {
@@ -37,6 +38,20 @@ const platforms = [
 ];
 
 export default function ContestInfo() {
+  // const [platforms, setPlatforms] = useState([]);
+
+  // const { getAvailablePlatforms } = useCode();
+
+  // useEffect(() => {
+  //   const fetchPlatforms = async () => {
+  //     const data = await getAvailablePlatforms();
+  //     console.log(data)
+  //     if (data) setPlatforms(data);
+  //   };
+  //   fetchPlatforms();
+  //   console.log(platforms)
+  // },[getAvailablePlatforms]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-gray-100 dark:from-black dark:via-gray-900 dark:to-gray-800 text-black dark:text-white px-6 py-16">
       <div className="max-w-4xl mx-auto text-center">
@@ -52,7 +67,7 @@ export default function ContestInfo() {
           {platforms.map(({ name, logo }) => (
             <Link
               key={name}
-              to={`/contestinfo/${name.toLowerCase()}`}
+              to={`/contest-info/${name}`}
               className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:shadow-lg transition"
             >
               <img

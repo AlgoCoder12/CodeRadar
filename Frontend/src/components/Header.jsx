@@ -2,14 +2,13 @@
 import React, { useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import authservice from "../service/appwrite/auth";
-import { useDispatch, useSelector } from "react-redux";
-import { login, logout } from "../store/authSlice";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Header({ darkMode, setDarkMode }) {
-  const dispatch = useDispatch();
-  const authState = useSelector(state => state.auth) || {};
-const { user, loggedIn } = authState;
+  
+
+  const {user, logout} = useAuth();
+  const loggedIn = user?true:false;
 
   const routes = [
     { name: "Home", to: "/" },
@@ -19,27 +18,25 @@ const { user, loggedIn } = authState;
   ];
 
   // Sync Appwrite session with redux on mount
-  useEffect(() => {
-    const syncUser = async () => {
-      const currentUser = await authservice.getCurrentUser();
-      if (currentUser) {
-        dispatch(login(currentUser));
-      } else {
-        dispatch(logout());
-      }
-    };
-    syncUser();
-  }, [dispatch]);
+  // useEffect(() => {
+  //   const syncUser = async () => {
+  //     const currentUser = await authservice.getCurrentUser();
+  //     if (currentUser) {
+  //       dispatch(login(currentUser));
+  //     } else {
+  //       dispatch(logout());
+  //     }
+  //   };
+  //   syncUser();
+  // }, [dispatch]);
 
   const logoutHandler = async () => {
     try {
-      await authservice.logout();
+      await logout();
     } catch (error) {
       // Ignored as handled in service
       console.error("Logout error:", error.message || error);
-    } finally {
-      dispatch(logout());
-    }
+    } 
   };
 
   return (
@@ -58,13 +55,6 @@ const { user, loggedIn } = authState;
 <span className="tracking-wide uppercase text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-500 font-mono font-extrabold">
   Code Radar
 </span>
-
-
-
-
-
-
-
 
       </Link>
 
@@ -97,7 +87,7 @@ const { user, loggedIn } = authState;
       <div className="flex items-center space-x-3">
         {loggedIn && user ? (
           <>
-            <span className="hidden sm:block font-medium">Hi, {user.name}</span>
+            <span className="hidden sm:block font-medium">Hi, {user.fullName}</span>
             <button
               className="inline-block px-6 py-2 duration-200 bg-blue-500 hover:bg-blue-700 rounded-full text-white"
               onClick={logoutHandler}

@@ -11,6 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/potd")
+@CrossOrigin(origins = "*")
 public class PotdController {
 
     @Autowired
@@ -37,7 +38,7 @@ public class PotdController {
         }
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<ExternalProblemDTO>> getAllProblems() {
         List<ExternalProblemDTO> problems = potdService.getAllProblems();
         return ResponseEntity.ok(problems);

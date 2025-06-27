@@ -5,10 +5,8 @@ public enum Platform {
     LEETCODE("LeetCode"),
     CODEFORCES("Codeforces"),
     GEEKSFORGEEKS("GeeksForGeeks"),
-    ATCODER("AtCoder"),
     CODECHEF("CodeChef"),
-    HACKERRANK("HackerRank"),
-    HACKEREARTH("HackerEarth");
+    HACKERRANK("HackerRank");
 
     private final String displayName;
 

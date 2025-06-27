@@ -19,87 +19,67 @@ public class GeeksForGeeksService {
 
     public ExternalProblemDTO getDailyProblem() {
         try {
+            // Step 1: Fetch the POTD redirect page
             Document doc = Jsoup.connect(GFG_POTD_URL)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36") // More detailed User-Agent
-                    .timeout(15000) // Increased timeout
+                    .userAgent("Mozilla/5.0")
+                    .timeout(10000)
+                    .get();
+
+            // Step 2: Extract the actual problem URL from the button onclick
+            Element button = doc.selectFirst("button.explore_POTDCntBtn__O1jcw");
+            String problemUrl = GFG_POTD_URL;
+
+            if (button != null) {
+                String onclick = button.attr("onclick");
+                Matcher matcher = URL_PATTERN.matcher(onclick);
+                if (matcher.find()) {
+                    problemUrl = matcher.group(1);
+                }
+            }
+
+            // Step 3: Load the actual problem page
+            Document problemPage = Jsoup.connect(problemUrl)
+                    .userAgent("Mozilla/5.0")
+                    .timeout(10000)
                     .get();
 
             ExternalProblemDTO dto = new ExternalProblemDTO();
             dto.setPlatform(Platform.GEEKSFORGEEKS.name());
-
-            // --- 1. Extract Problem Title ---
-            String title = "GeeksforGeeks Problem of the Day"; // Default fallback
-            Element titleElement = doc.selectFirst("div.problem-of-the-day-data h2, span.explore_problemOfTheDayLabelMobile__Kz4Rx");
-            if (titleElement != null) {
-                title = titleElement.text().trim();
-                // Clean up "Problem of the Day: " prefix if present
-                if (title.startsWith("Problem of the Day: ")) {
-                    title = title.substring("Problem of the Day: ".length()).trim();
-                }
-            } else {
-                System.err.println("Warning: Could not find specific title element. Using fallback title.");
-            }
-            dto.setTitle(title);
-
-            // --- 2. Extract Problem URL ---
-            String problemUrl = GFG_POTD_URL; // Fallback URL
-            Element button = doc.selectFirst("button.explore_POTDCntBtn__O1jcw");
-
-            if (button != null) {
-                String onClickAttr = button.attr("onclick");
-                Matcher matcher = URL_PATTERN.matcher(onClickAttr);
-                if (matcher.find()) {
-                    problemUrl = matcher.group(1);
-                    System.out.println("Extracted GFG Problem URL: " + problemUrl);
-                } else {
-                    System.err.println("Warning: Could not parse problem URL from onclick attribute. Using fallback URL.");
-                }
-            } else {
-                System.err.println("Warning: 'Solve Problem' button not found. Using fallback URL.");
-            }
             dto.setProblemUrl(problemUrl);
 
-            // --- 3. Extract Difficulty ---
-            String difficultyStr = "Medium"; // Default
-            int points = Difficulty.Medium.getPoints(); // Default
-            Element difficultyElement = doc.selectFirst("div.explore_problemOfTheDayData__5C7Kn > p > span"); // Check for common difficulty element
-            if (difficultyElement != null) {
-                String rawDifficulty = difficultyElement.text().trim();
-                if (rawDifficulty.contains("Easy")) {
-                    difficultyStr = "Easy";
-                    points = Difficulty.Easy.getPoints();
-                } else if (rawDifficulty.contains("Medium")) {
-                    difficultyStr = "Medium";
-                    points = Difficulty.Medium.getPoints();
-                } else if (rawDifficulty.contains("Hard")) {
-                    difficultyStr = "Hard";
-                    points = Difficulty.Hard.getPoints();
-                }
-            } else {
-                System.err.println("Warning: Could not find difficulty element. Using default difficulty.");
+            // Step 4: Extract Title
+            String title = problemPage.selectFirst("h1.entry-title").text();
+            dto.setTitle(title);
+
+            // Step 5: Extract Description snippet
+            Element descriptionEl = problemPage.selectFirst("div.text");
+            String description = (descriptionEl != null)
+                    ? descriptionEl.text().split("\\.")[0] + "."
+                    : "Solve today's coding problem on GFG!";
+            dto.setDescription(description);
+
+            // Step 6: Extract Difficulty from tags or hardcode fallback
+            String lowerText = problemPage.text().toLowerCase();
+            String difficultyStr = "Medium";
+            int points = Difficulty.Medium.getPoints();
+
+            if (lowerText.contains("easy")) {
+                difficultyStr = "Easy";
+                points = Difficulty.Easy.getPoints();
+            } else if (lowerText.contains("hard")) {
+                difficultyStr = "Hard";
+                points = Difficulty.Hard.getPoints();
             }
+
             dto.setDifficulty(difficultyStr);
             dto.setPoints(points);
-
-            // --- 4. Extract Description (optional, may vary) ---
-            // GFG's POTD page usually has a brief description or intro.
-            // This is highly dependent on the current HTML structure.
-            // You might look for a paragraph near the title or within the POTD container.
-            Element descriptionElement = doc.selectFirst("div.problem-of-the-day-data p.description-text"); // Example selector
-            if (descriptionElement != null) {
-                dto.setDescription(descriptionElement.text().trim());
-            } else {
-                // Fallback to a generic description if not found
-                dto.setDescription("Solve the Problem of the Day on GeeksforGeeks!");
-            }
-
 
             return dto;
 
         } catch (Exception e) {
-            System.err.println("Error scraping GFG POTD: " + e.getMessage());
+            System.err.println("Failed to fetch GFG POTD: " + e.getMessage());
             e.printStackTrace();
-            return null; // Or throw a custom exception
+            return null;
         }
     }
 }
