@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -57,6 +59,39 @@ AuthController {
             return ResponseEntity.ok(new AuthResponse(token, user));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Login failed: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/request-otp")
+    public ResponseEntity<?> requestOtp(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
+        }
+        boolean sent = userService.generateAndSendOtp(email);
+        if (sent) {
+            return ResponseEntity.ok(Map.of("message", "OTP sent to email"));
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Failed to send OTP"));
+        }
+    }
+
+    @PostMapping("/validate-otp")
+    public ResponseEntity<?> validateOtp(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        String otp = payload.get("otp");
+        if (email == null || otp == null || email.isEmpty() || otp.isEmpty()) {
+            return ResponseEntity.badRequest().body("Email and OTP are required");
+        }
+        boolean valid = userService.validateOtp(email, otp);
+        Map<String, Object> response = new HashMap<>();
+        response.put("valid", valid);
+        if (valid) {
+            response.put("message", "OTP validated successfully");
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("message", "Invalid or expired OTP");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
     }
 }

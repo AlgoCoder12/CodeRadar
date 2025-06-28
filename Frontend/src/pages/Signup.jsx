@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../contexts/AuthContext";
+import axios from "axios";
 
 // Simple Input and Button components for demo (replace with your UI components)
 function Input({ label, error, ...props }) {
@@ -33,7 +34,7 @@ function Button({ children, ...props }) {
 function Signup() {
   const navigate = useNavigate();
 
-  const {user, signup} = useAuth();
+  const {signup} = useAuth();
 
   const {
     register,
@@ -42,20 +43,67 @@ function Signup() {
   } = useForm();
 
   const [error, setError] = useState("");
+  const [showOtp, setShowOtp] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [emailForOtp, setEmailForOtp] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpSuccess, setOtpSuccess] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [formData, setFormData] = useState(null);
+
+  const url = "http://localhost:8080";
 
   const create = async (data) => {
     setError("");
+    setOtpError("");
+    setOtpSuccess(false);
+    setFormData(data);
+    setEmailForOtp(data.email);
+    
     try {
-      // Create account with authService (make sure your method name is correct)
-      // console.log(data)
-      await signup(data);
-      // After creating account, get current user data
-      if (!user) {
-        setError("Failed to retrieve user data after account creation.");
-      }
+      // First, request OTP
+      await axios.post(`${url}/api/auth/request-otp`, { email: data.email });
+      setShowOtp(true);
+    } catch {
+      setError("Failed to send OTP. Please try again.");
+    }
+  };
 
-    } catch (err) {
-      setError(err.message || "Account creation failed.");
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault();
+    setOtpError("");
+    setOtpLoading(true);
+    try {
+      const res = await axios.post(`${url}/api/auth/validate-otp`, { email: emailForOtp, otp });
+      if (res.data.valid) {
+        setOtpSuccess(true);
+        // Now create the account after OTP validation
+        try {
+          await signup(formData);
+          setTimeout(() => navigate("/"), 1000);
+        } catch {
+          setOtpError("Account creation failed after OTP validation.");
+        }
+      } else {
+        setOtpError("Invalid OTP");
+      }
+    } catch {
+      setOtpError("OTP validation failed.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setResendLoading(true);
+    setOtpError("");
+    try {
+      await axios.post(`${url}/api/auth/request-otp`, { email: emailForOtp });
+    } catch {
+      setOtpError("Failed to resend OTP");
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -83,43 +131,72 @@ function Signup() {
 
         {error && <p className="text-red-600 mt-6 text-center font-medium">{error}</p>}
 
-        <form onSubmit={handleSubmit(create)} className="mt-8 space-y-5">
-          <Input
-            label="Full Name"
-            placeholder="Enter your full name"
-            {...register("fullName", {
-              required: "Full name is required",
-              minLength: { value: 2, message: "Name must be at least 2 characters" },
-            })}
-            error={errors.name?.message}
-          />
-          <Input
-            label="Email"
-            placeholder="Enter your email"
-            type="email"
-            {...register("email", {
-              required: "Email is required",
-              pattern: {
-                value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-                message: "Email address must be valid",
-              },
-            })}
-            error={errors.email?.message}
-          />
-          <Input
-            label="Password"
-            type="password"
-            placeholder="Enter your password"
-            {...register("password", {
-              required: "Password is required",
-              minLength: { value: 6, message: "Password must be at least 6 characters" },
-            })}
-            error={errors.password?.message}
-          />
-          <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? "Creating Account..." : "Create Account"}
-          </Button>
-        </form>
+        {!showOtp ? (
+          <form onSubmit={handleSubmit(create)} className="mt-8 space-y-5">
+            <Input
+              label="Full Name"
+              placeholder="Enter your full name"
+              {...register("fullName", {
+                required: "Full name is required",
+                minLength: { value: 2, message: "Name must be at least 2 characters" },
+              })}
+              error={errors.name?.message}
+            />
+            <Input
+              label="Email"
+              placeholder="Enter your email"
+              type="email"
+              {...register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+                  message: "Email address must be valid",
+                },
+              })}
+              error={errors.email?.message}
+            />
+            <Input
+              label="Password"
+              type="password"
+              placeholder="Enter your password"
+              {...register("password", {
+                required: "Password is required",
+                minLength: { value: 6, message: "Password must be at least 6 characters" },
+              })}
+              error={errors.password?.message}
+            />
+            <Button type="submit" disabled={isSubmitting} className="w-full">
+              {isSubmitting ? "Sending OTP..." : "Send OTP"}
+            </Button>
+          </form>
+        ) : (
+          <div className="mt-8 space-y-5">
+            <form onSubmit={handleOtpSubmit} className="space-y-4">
+              <Input
+                label="Enter OTP sent to your email"
+                placeholder="6-digit OTP"
+                value={otp}
+                onChange={e => setOtp(e.target.value)}
+                maxLength={6}
+                error={otpError}
+              />
+              <Button type="submit" disabled={otpLoading || otp.length !== 6} className="w-full">
+                {otpLoading ? "Verifying..." : "Verify OTP & Create Account"}
+              </Button>
+            </form>
+            <div className="flex justify-between items-center mt-2">
+              <button
+                type="button"
+                className="text-blue-600 hover:underline text-sm"
+                onClick={handleResendOtp}
+                disabled={resendLoading}
+              >
+                {resendLoading ? "Resending..." : "Resend OTP"}
+              </button>
+              {otpSuccess && <span className="text-green-600 text-sm">OTP Verified! Creating account...</span>}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

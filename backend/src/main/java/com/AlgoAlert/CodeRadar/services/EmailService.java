@@ -268,4 +268,42 @@ public class EmailService {
         emailNotificationRepository.deleteOldNotifications(cutoffDate);
         System.out.println("Cleaned up email notifications older than 30 days");
     }
+
+    /**
+     * Send OTP email to a user
+     */
+    public boolean sendOtpEmail(String toEmail, String otp) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Your OTP Code for " + appName);
+            helper.setText(generateOtpEmailContent(otp), true);
+
+            mailSender.send(message);
+            System.out.println("OTP email sent successfully to " + toEmail);
+            return true;
+        } catch (Exception e) {
+            System.err.println("Failed to send OTP email: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Generate OTP email content
+     */
+    private String generateOtpEmailContent(String otp) {
+        return "<!DOCTYPE html>" +
+               "<html><head><title>OTP Verification</title></head><body>" +
+               "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;'>" +
+               "<h2 style='color: #007bff;'>Your OTP Code</h2>" +
+               "<p>Please use the following OTP to verify your email address:</p>" +
+               "<div style='font-size: 2em; font-weight: bold; color: #333; margin: 20px 0;'>" + otp + "</div>" +
+               "<p>This OTP is valid for 10 minutes. If you did not request this, please ignore this email.</p>" +
+               "<hr>" +
+               "<p style='color: #6c757d; font-size: 12px;'>This is an automated email from " + appName + ".</p>" +
+               "</div></body></html>";
+    }
 }

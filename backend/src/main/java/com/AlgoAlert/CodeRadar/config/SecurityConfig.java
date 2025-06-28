@@ -44,6 +44,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/auth/register").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/request-otp").permitAll()
+                        .requestMatchers("/api/auth/validate-otp").permitAll()
                        .requestMatchers("/api/contests/**").permitAll()
                         .requestMatchers("/api/potd/**").permitAll()
                         .requestMatchers("/api/notifications/**").permitAll()
