@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 // Create the AuthContext
 const AuthContext = createContext();
@@ -14,8 +14,46 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token")?localStorage.getItem("token"):null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const url = "http://localhost:8080";
+
+  const getCurrentUser = async (token) => {
+    try {
+      setLoading(true)
+      const response = await axios.get(`${url}/users/current-user`, {headers: {Authorization: `Bearer ${token}`}});
+      // console.log("cr",response)
+      const user = response.data;
+      if (user) {
+        setUser(user);
+        navigate("/")
+      }
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (token) {
+      getCurrentUser(token);
+    }
+  },[])
+
+  useEffect(() => {
+    // Check for OAuth callback
+    const pToken = searchParams.get('token');
+    const userId = searchParams.get('userId');
+    
+    if (pToken && userId) {
+      localStorage.setItem('token', pToken);
+      localStorage.setItem('userId', userId);
+      setToken(pToken); 
+      getCurrentUser(pToken); 
+      navigate('/dashboard', { replace: true });
+    }
+  }, [searchParams, navigate]);
 
   // Simulate loading user from localStorage or API
   //register
@@ -87,29 +125,6 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     localStorage.removeItem("token");
   };
-
-  const getCurrentUser = async () => {
-    try {
-      setLoading(true)
-      const response = await axios.get(`${url}/users/current-user`, {headers: {Authorization: `Bearer ${token}`}});
-      // console.log("cr",response)
-      const user = response.data;
-      if (user) {
-        setUser(user);
-        navigate("/")
-      }
-    } catch (error) {
-      console.log(error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (token) {
-      getCurrentUser();
-    }
-  },[])
 
   return (
     <AuthContext.Provider value={{ user, signup, login, logout, loading }}>

@@ -42,7 +42,7 @@ public class ContestNotificationService {
                                  contest.getStartTime().isBefore(windowEnd))
                 .collect(Collectors.toList());
 
-            System.out.println("Found " + contestsToNotify.size() + " contests starting in 12 hours");
+//            System.out.println("Found " + contestsToNotify.size() + " contests starting in 12 hours");
 
             // Send notifications for each contest
             for (Contest contest : contestsToNotify) {
@@ -50,7 +50,7 @@ public class ContestNotificationService {
             }
 
         } catch (Exception e) {
-            System.err.println("Error in contest notification check: " + e.getMessage());
+//            System.err.println("Error in contest notification check: " + e.getMessage());
             e.printStackTrace();
         }
     }
