@@ -67,6 +67,15 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.log(error)
+      if (error.response?.status === 401) {
+        throw new Error("Incorrect email or password");
+      }
+  
+      // Handle other errors
+      throw new Error(
+        error.response?.data?.message || "Login failed. Please try again."
+      );
+      
     } finally{
       setLoading(false)
     }

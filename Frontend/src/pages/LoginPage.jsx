@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import { FcGoogle } from "react-icons/fc";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -8,6 +8,8 @@ import { useAuth } from "../contexts/AuthContext";
 // For example purpose, I'll use simple inputs and buttons here:
 
 function Input({ label, error, ...props }) {
+  
+  
   return (
     <div>
       <label className="block text-sm font-medium mb-1">{label}</label>
@@ -45,6 +47,9 @@ function LoginPage() {
   } = useForm();
 
   const [error, setError] = useState("");
+  const handleGoogleLogin = () => {
+    window.location.href = "http://localhost:8080/oauth2/authorization/google";
+  };
 
   const onSubmit = async (data) => {
     setError("");
@@ -123,6 +128,27 @@ function LoginPage() {
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting ? "Signing in..." : "Sign in"}
           </Button>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white dark:bg-gray-800 px-2 text-gray-500">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            className="w-full flex items-center justify-center gap-2 border border-gray-300 dark:border-gray-600 rounded-md py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >
+            <FcGoogle size={22} />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+               Google
+            </span>
+          </button>
         </form>
       </div>
     </div>
