@@ -4,6 +4,7 @@ package com.AlgoAlert.CodeRadar.services;
 import com.AlgoAlert.CodeRadar.model.User;
 import com.AlgoAlert.CodeRadar.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,8 +26,14 @@ public class UserService {
     @Autowired
     private JWTService jwtService;
 
-    @Autowired
+//    @Autowired
     private AuthenticationManager authenticationManager;
+
+    public UserService(UserRepo userRepo,
+                       @Lazy AuthenticationManager authenticationManager) {
+        this.userRepo = userRepo;
+        this.authenticationManager = authenticationManager;
+    }
 
     @Autowired
     private EmailService emailService;
@@ -49,8 +56,14 @@ public class UserService {
     }
 
     public void saveUser(User user) {
+        System.out.println("Saving user: " + user.getEmail());
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            System.err.println("Error: Cannot save user with empty password");
+            return;
+        }
         user.setPassword(encoder.encode(user.getPassword()));
         userRepo.save(user);
+        System.out.println("User saved successfully: " + user.getEmail());
     }
 
     public User findByUsername(String username) {
@@ -70,13 +83,18 @@ public class UserService {
     }
 
     public String verify(String username, String password) {
-        Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-
-        if (auth.isAuthenticated()) {
+        System.out.println("Attempting to verify user: " + username);
+        try {
+            Authentication auth = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password)
+            );
+            System.out.println("Authentication successful for user: " + username);
             return jwtService.generateToken(username);
+        } catch (Exception e) {
+            System.err.println("Authentication failed for user " + username + ": " + e.getMessage());
+            e.printStackTrace();
+            return null;
         }
-
-        return null;
     }
 
     public boolean generateAndSendOtp(String email) {
