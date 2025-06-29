@@ -38,22 +38,22 @@ export default function LandingPage() {
       name: "TopCoder",
       logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8zAQWiyyKXkXygCCWUz_01xvVCxWOCpTsjQ&s",
     },
-    {
-      name: "CS Academy",
-      logo: "https://csacademy.com/app/static/round/favicon.png",
-    },
-    {
-      name: "HackerEarth",
-      logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxTmatQgSjbS7EcoYLY1dPCjPwqOBmSvEwHg&s",
-    },
-    {
-      name: "HackerRank",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/6/65/HackerRank_logo.png",
-    },
-    {
-      name: "Kick Start",
-      logo: "https://media.licdn.com/dms/image/v2/C560BAQGXNaIkf2kBwQ/company-logo_200_200/company-logo_200_200/0/1631426665528/kickstartcoding_logo?e=2147483647&v=beta&t=hcOpZAQiqGKmJHi5lo_00B2wX2td6Kb-ZufAMMg5reo",
-    },
+    // {
+    //   name: "CS Academy",
+    //   logo: "https://csacademy.com/app/static/round/favicon.png",
+    // },
+    // {
+    //   name: "HackerEarth",
+    //   logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxTmatQgSjbS7EcoYLY1dPCjPwqOBmSvEwHg&s",
+    // },
+    // {
+    //   name: "HackerRank",
+    //   logo: "https://upload.wikimedia.org/wikipedia/commons/6/65/HackerRank_logo.png",
+    // },
+    // {
+    //   name: "Kick Start",
+    //   logo: "https://media.licdn.com/dms/image/v2/C560BAQGXNaIkf2kBwQ/company-logo_200_200/company-logo_200_200/0/1631426665528/kickstartcoding_logo?e=2147483647&v=beta&t=hcOpZAQiqGKmJHi5lo_00B2wX2td6Kb-ZufAMMg5reo",
+    // },
   ];
 
   return (
