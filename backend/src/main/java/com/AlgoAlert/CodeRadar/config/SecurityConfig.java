@@ -1,10 +1,13 @@
 package com.AlgoAlert.CodeRadar.config;
 
 
+import com.AlgoAlert.CodeRadar.services.CustomOAuth2UserService;
 import com.AlgoAlert.CodeRadar.services.UserDetailsServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -28,13 +31,23 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+//@RequiredArgsConstructor
+@Order(2)
 public class SecurityConfig {
 
-    @Autowired
-    private JWTFilter jwtFilter;
+//    @Autowired
+    private final JWTFilter jwtFilter;
 
-    @Autowired
-    private UserDetailsServiceImpl userDetailsServiceImpl;
+//    @Autowired
+    private final UserDetailsServiceImpl userDetailsServiceImpl;
+
+    public SecurityConfig(JWTFilter jwtFilter, UserDetailsServiceImpl userDetailsService) {
+        this.jwtFilter = jwtFilter;
+        this.userDetailsServiceImpl = userDetailsService;
+    }
+
+//    @Autowired
+//    private final CustomOAuth2UserService customOAuth2UserService;
     
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -42,16 +55,15 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/api/auth/register").permitAll()
-                        .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/api/auth/request-otp").permitAll()
-                        .requestMatchers("/api/auth/validate-otp").permitAll()
-                       .requestMatchers("/api/contests/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/contests/**").permitAll()
                         .requestMatchers("/api/potd/**").permitAll()
                         .requestMatchers("/api/notifications/**").permitAll()
-                        .anyRequest().authenticated())
+                        .anyRequest().authenticated()
+
+                )
                 .httpBasic(Customizer.withDefaults())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
