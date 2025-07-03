@@ -104,36 +104,54 @@ public class ContestFetcherService {
     public List<Contest> fetchContestsManually() {
         List<Contest> allContests = new ArrayList<>();
         java.util.Map<String, List<Contest>> platformContests = new java.util.LinkedHashMap<>();
+        
         try {
-            List<Contest> codeforces = fetchCodeforcesContests();
-            List<Contest> codechef = fetchCodeChefContests();
-            List<Contest> atcoder = fetchAtCoderContests();
-            List<Contest> leetcode = fetchLeetCodeContests();
-            List<Contest> hackerrank = fetchHackerRankContests();
-            List<Contest> hackerearth = fetchHackerEarthContests();
-            List<Contest> gfg = fetchGeeksforGeeksContests();
-            List<Contest> csacademy = fetchCSAcademyContests();
-            List<Contest> topcoder = fetchTopCoderContests();
+            // First try universal contest aggregator API for all platforms
+            System.out.println("Trying universal contest aggregator API...");
+            List<Contest> universalContests = fetchUniversalContests();
             
-            platformContests.put("Codeforces", codeforces);
-            platformContests.put("CodeChef", codechef);
-            platformContests.put("AtCoder", atcoder);
-            platformContests.put("LeetCode", leetcode);
-            platformContests.put("HackerRank", hackerrank);
-            platformContests.put("HackerEarth", hackerearth);
-            platformContests.put("GeeksforGeeks", gfg);
-            platformContests.put("CS Academy", csacademy);
-            platformContests.put("TopCoder", topcoder);
-            
-            allContests.addAll(codeforces);
-            allContests.addAll(codechef);
-            allContests.addAll(atcoder);
-            allContests.addAll(leetcode);
-            allContests.addAll(hackerrank);
-            allContests.addAll(hackerearth);
-            allContests.addAll(gfg);
-            allContests.addAll(csacademy);
-            allContests.addAll(topcoder);
+            if (!universalContests.isEmpty()) {
+                System.out.println("✅ Successfully fetched " + universalContests.size() + " contests from universal API");
+                allContests.addAll(universalContests);
+                
+                // Group by platform for reporting
+                for (Contest contest : universalContests) {
+                    platformContests.computeIfAbsent(contest.getPlatform(), k -> new ArrayList<>()).add(contest);
+                }
+            } else {
+                // Fallback to individual platform fetching
+                System.out.println("Universal API failed, trying individual platforms...");
+                
+                List<Contest> codeforces = fetchCodeforcesContests();
+                List<Contest> codechef = fetchCodeChefContests();
+                List<Contest> atcoder = fetchAtCoderContests();
+                List<Contest> leetcode = fetchLeetCodeContests();
+                List<Contest> hackerrank = fetchHackerRankContests();
+                List<Contest> hackerearth = fetchHackerEarthContests();
+                List<Contest> gfg = fetchGeeksforGeeksContests();
+                List<Contest> csacademy = fetchCSAcademyContests();
+                List<Contest> topcoder = fetchTopCoderContests();
+                
+                platformContests.put("Codeforces", codeforces);
+                platformContests.put("CodeChef", codechef);
+                platformContests.put("AtCoder", atcoder);
+                platformContests.put("LeetCode", leetcode);
+                platformContests.put("HackerRank", hackerrank);
+                platformContests.put("HackerEarth", hackerearth);
+                platformContests.put("GeeksforGeeks", gfg);
+                platformContests.put("CS Academy", csacademy);
+                platformContests.put("TopCoder", topcoder);
+                
+                allContests.addAll(codeforces);
+                allContests.addAll(codechef);
+                allContests.addAll(atcoder);
+                allContests.addAll(leetcode);
+                allContests.addAll(hackerrank);
+                allContests.addAll(hackerearth);
+                allContests.addAll(gfg);
+                allContests.addAll(csacademy);
+                allContests.addAll(topcoder);
+            }
             
             contestService.saveContests(allContests);
             
@@ -150,6 +168,105 @@ public class ContestFetcherService {
         }
         
         return allContests;
+    }
+    
+    // Universal contest fetcher using kontests.net API
+    public List<Contest> fetchUniversalContests() {
+        List<Contest> allContests = new ArrayList<>();
+        
+        try {
+            System.out.println("Fetching contests from universal contest aggregator API...");
+            
+            Request request = new Request.Builder()
+                    .url("https://kontests.net/api/v1/all")
+                    .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    .addHeader("Accept", "application/json")
+                    .build();
+            
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String responseBody = response.body().string();
+                    JsonNode contestsArray = objectMapper.readTree(responseBody);
+                    
+                    if (contestsArray.isArray()) {
+                        System.out.println("Found " + contestsArray.size() + " total contests from universal API");
+                        
+                        for (JsonNode contestNode : contestsArray) {
+                            try {
+                                String name = contestNode.get("name").asText();
+                                String url = contestNode.get("url").asText();
+                                String site = contestNode.get("site").asText();
+                                String startTimeStr = contestNode.get("start_time").asText();
+                                String endTimeStr = contestNode.get("end_time").asText();
+                                long durationSeconds = contestNode.get("duration").asLong();
+                                String status = contestNode.get("status").asText();
+                                
+                                // Only include upcoming contests
+                                if ("BEFORE".equalsIgnoreCase(status) || "RUNNING".equalsIgnoreCase(status)) {
+                                    // Parse ISO 8601 timestamps
+                                    LocalDateTime startTime = LocalDateTime.parse(startTimeStr.substring(0, 19));
+                                    LocalDateTime endTime = LocalDateTime.parse(endTimeStr.substring(0, 19));
+                                    
+                                    // Only include future contests
+                                    if (startTime.isAfter(LocalDateTime.now())) {
+                                        // Map site names to our platform names
+                                        String platform = mapSiteToPlatform(site);
+                                        
+                                        Contest contest = Contest.builder()
+                                                .name(name)
+                                                .platform(platform)
+                                                .url(url)
+                                                .startTime(startTime)
+                                                .endTime(endTime)
+                                                .durationMinutes(Long.valueOf(durationSeconds / 60))
+                                                .build();
+                                        allContests.add(contest);
+                                        System.out.println("✅ Added " + platform + " contest: " + name);
+                                    }
+                                }
+                            } catch (Exception contestParseError) {
+                                System.err.println("Error parsing universal contest: " + contestParseError.getMessage());
+                            }
+                        }
+                    }
+                } else {
+                    System.err.println("Universal contest API returned status: " + response.code());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching universal contests: " + e.getMessage());
+        }
+        
+        System.out.println("Universal contest fetcher retrieved: " + allContests.size() + " contests");
+        return allContests;
+    }
+    
+    // Helper method to map site names from kontests.net to our platform names
+    private String mapSiteToPlatform(String site) {
+        switch (site.toLowerCase()) {
+            case "codeforces":
+                return "Codeforces";
+            case "codechef":
+                return "CodeChef";
+            case "atcoder":
+                return "AtCoder";
+            case "leetcode":
+                return "LeetCode";
+            case "hackerrank":
+                return "HackerRank";
+            case "hackerearth":
+                return "HackerEarth";
+            case "geeksforgeeks":
+            case "gfg":
+                return "GeeksforGeeks";
+            case "csacademy":
+            case "cs academy":
+                return "CS Academy";
+            case "topcoder":
+                return "TopCoder";
+            default:
+                return site; // Return as-is for unknown sites
+        }
     }
     
     // Fetch Codeforces contests using their API
@@ -205,57 +322,167 @@ public class ContestFetcherService {
         return contests;
     }
     
-    // Fetch CodeChef contests (using web scraping as they don't have public API)
+    // Fetch CodeChef contests (using API and fallback to scraping)
     public List<Contest> fetchCodeChefContests() {
         List<Contest> contests = new ArrayList<>();
         
         try {
-            Document doc = Jsoup.connect("https://www.codechef.com/contests")
-                    .timeout(30000)
-                    .get();
+            System.out.println("Fetching CodeChef contests...");
             
-            // Parse upcoming contests table
-            Elements contestRows = doc.select("table.dataTable tbody tr");
-            
-            for (Element row : contestRows) {
-                Elements cells = row.select("td");
-                if (cells.size() >= 4) {
-                    String name = cells.get(0).text().trim();
-                    String startTimeStr = cells.get(2).text().trim();
-                    String endTimeStr = cells.get(3).text().trim();
-                    
-                    // Parse dates (CodeChef uses specific format)
-                    // This is a simplified parsing - in production, you'd want more robust date parsing
-                    try {
-                        LocalDateTime startTime = parseCodeChefDate(startTimeStr);
-                        LocalDateTime endTime = parseCodeChefDate(endTimeStr);
+            // First try API approach
+            try {
+                Request apiRequest = new Request.Builder()
+                        .url("https://www.codechef.com/api/list/contests/all")
+                        .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                        .addHeader("Accept", "application/json")
+                        .build();
+                
+                try (Response response = httpClient.newCall(apiRequest).execute()) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        String responseBody = response.body().string();
+                        JsonNode root = objectMapper.readTree(responseBody);
                         
-                        if (startTime != null && endTime != null && startTime.isAfter(LocalDateTime.now())) {
-                            String url = "https://www.codechef.com/contests/" + 
-                                name.toLowerCase().replaceAll("\\s+", "-");
+                        if (root.has("future_contests")) {
+                            JsonNode futureContests = root.get("future_contests");
                             
-                            long duration = java.time.Duration.between(startTime, endTime).toMinutes();
-                            
-                            Contest contest = Contest.builder()
-                                    .name(name)
-                                    .platform("CodeChef")
-                                    .url(url)
-                                    .startTime(startTime)
-                                    .endTime(endTime)
-                                    .durationMinutes(Long.valueOf(duration))
-                                    .build();
-                            contests.add(contest);
+                            for (JsonNode contestNode : futureContests) {
+                                String contestCode = contestNode.get("contest_code").asText();
+                                String contestName = contestNode.get("contest_name").asText();
+                                String startDate = contestNode.get("contest_start_date").asText();
+                                String endDate = contestNode.get("contest_end_date").asText();
+                                
+                                try {
+                                    LocalDateTime startTime = parseCodeChefApiDate(startDate);
+                                    LocalDateTime endTime = parseCodeChefApiDate(endDate);
+                                    
+                                    if (startTime != null && endTime != null && startTime.isAfter(LocalDateTime.now())) {
+                                        String url = "https://www.codechef.com/" + contestCode;
+                                        long duration = java.time.Duration.between(startTime, endTime).toMinutes();
+                                        
+                                        Contest contest = Contest.builder()
+                                                .name(contestName)
+                                                .platform("CodeChef")
+                                                .url(url)
+                                                .startTime(startTime)
+                                                .endTime(endTime)
+                                                .durationMinutes(Long.valueOf(duration))
+                                                .build();
+                                        contests.add(contest);
+                                        System.out.println("Added CodeChef contest: " + contestName);
+                                    }
+                                } catch (Exception dateParseError) {
+                                    System.err.println("Error parsing CodeChef API date for: " + contestName);
+                                }
+                            }
                         }
-                    } catch (Exception dateParseError) {
-                        System.err.println("Error parsing CodeChef date for contest: " + name);
                     }
+                }
+            } catch (Exception apiError) {
+                System.err.println("CodeChef API failed, trying web scraping: " + apiError.getMessage());
+            }
+            
+            // Fallback to web scraping if API fails
+            if (contests.isEmpty()) {
+                try {
+                    Document doc = Jsoup.connect("https://www.codechef.com/contests")
+                            .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                            .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                            .timeout(30000)
+                            .get();
+                    
+                    // Updated selectors for current CodeChef structure
+                    Elements contestElements = doc.select(".contest-card, .upcoming-contest, [data-contest-code], .content-wrapper .dataTable tbody tr");
+                    
+                    if (contestElements.isEmpty()) {
+                        // Try alternative selectors
+                        contestElements = doc.select("table tbody tr, .contest-item, .challenge-item");
+                    }
+                    
+                    for (Element element : contestElements) {
+                        try {
+                            String name = "";
+                            String startTimeStr = "";
+                            String endTimeStr = "";
+                            
+                            // Try different parsing approaches
+                            Elements cells = element.select("td");
+                            if (cells.size() >= 3) {
+                                Element nameElement = cells.get(0).selectFirst("a, .contest-name");
+                                if (nameElement != null) {
+                                    name = nameElement.text().trim();
+                                }
+                                
+                                if (cells.size() >= 4) {
+                                    startTimeStr = cells.get(2).text().trim();
+                                    endTimeStr = cells.get(3).text().trim();
+                                } else {
+                                    startTimeStr = cells.get(1).text().trim();
+                                    endTimeStr = cells.get(2).text().trim();
+                                }
+                            } else {
+                                // Try card-based structure
+                                Element titleElement = element.selectFirst(".contest-title, .title, h3, h4, a");
+                                if (titleElement != null) {
+                                    name = titleElement.text().trim();
+                                }
+                                
+                                Element timeElement = element.selectFirst(".contest-time, .time-info, .date-time");
+                                if (timeElement != null) {
+                                    String timeText = timeElement.text();
+                                    // Extract start and end times from combined text
+                                    if (timeText.contains(" to ")) {
+                                        String[] timeParts = timeText.split(" to ");
+                                        if (timeParts.length == 2) {
+                                            startTimeStr = timeParts[0].trim();
+                                            endTimeStr = timeParts[1].trim();
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            if (!name.isEmpty() && !startTimeStr.isEmpty()) {
+                                try {
+                                    LocalDateTime startTime = parseCodeChefDate(startTimeStr);
+                                    LocalDateTime endTime = endTimeStr.isEmpty() ? 
+                                        startTime.plusHours(3) : parseCodeChefDate(endTimeStr);
+                                    
+                                    if (startTime != null && endTime != null && startTime.isAfter(LocalDateTime.now())) {
+                                        String url = "https://www.codechef.com/contests/" + 
+                                            name.toLowerCase().replaceAll("[^a-zA-Z0-9]", "-");
+                                        
+                                        long duration = java.time.Duration.between(startTime, endTime).toMinutes();
+                                        
+                                        Contest contest = Contest.builder()
+                                                .name(name)
+                                                .platform("CodeChef")
+                                                .url(url)
+                                                .startTime(startTime)
+                                                .endTime(endTime)
+                                                .durationMinutes(Long.valueOf(duration))
+                                                .build();
+                                        contests.add(contest);
+                                        System.out.println("Added CodeChef contest from scraping: " + name);
+                                    }
+                                } catch (Exception dateParseError) {
+                                    System.err.println("Error parsing CodeChef date for contest: " + name);
+                                }
+                            }
+                        } catch (Exception elementError) {
+                            System.err.println("Error parsing CodeChef element: " + elementError.getMessage());
+                        }
+                    }
+                } catch (Exception scrapingError) {
+                    System.err.println("CodeChef web scraping failed: " + scrapingError.getMessage());
                 }
             }
             
+            
         } catch (Exception e) {
             System.err.println("Error fetching CodeChef contests: " + e.getMessage());
+            e.printStackTrace();
         }
         
+        System.out.println("CodeChef contests fetched: " + contests.size());
         return contests;
     }
     
@@ -375,122 +602,74 @@ public class ContestFetcherService {
         return contests;
     }
     
-    // Fetch HackerRank contests using web scraping
+    // Fetch HackerRank contests using contest aggregator API as fallback
     public List<Contest> fetchHackerRankContests() {
         List<Contest> contests = new ArrayList<>();
         
         try {
-            // HackerRank contests page with proper headers
-            Document doc = Jsoup.connect("https://www.hackerrank.com/contests")
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
-                    .header("Accept-Language", "en-US,en;q=0.5")
-                    .timeout(30000)
-                    .get();
+            System.out.println("Fetching HackerRank contests...");
             
-            // Parse upcoming contests section
-            Elements contestElements = doc.select(".contest-item, .challenge-list-item, .contest-card");
-            
-            for (Element contestElement : contestElements) {
-                try {
-                    String name = "";
-                    String url = "";
-                    String startTimeStr = "";
-                    String endTimeStr = "";
-                    
-                    // Try different selectors based on HackerRank's HTML structure
-                    Element titleElement = contestElement.selectFirst(".challenge-name a, .contest-title a, h4 a");
-                    if (titleElement != null) {
-                        name = titleElement.text().trim();
-                        url = "https://www.hackerrank.com" + titleElement.attr("href");
-                    }
-                    
-                    Element timeElement = contestElement.selectFirst(".challenge-time, .contest-time, .time-info");
-                    if (timeElement != null) {
-                        String timeText = timeElement.text();
-                        // Parse time information from HackerRank format
-                        // This would need to be adapted based on their current format
-                    }
-                    
-                    // If we have valid contest data and it's a future contest
-                    if (!name.isEmpty() && !url.isEmpty()) {
-                        // For now, create a placeholder with approximate timing
-                        LocalDateTime startTime = LocalDateTime.now().plusDays(1);
-                        LocalDateTime endTime = startTime.plusHours(2);
+            // Use contest aggregator API that includes HackerRank contests
+            // Try kontests.net API which aggregates contests from multiple platforms
+            try {
+                Request apiRequest = new Request.Builder()
+                        .url("https://kontests.net/api/v1/hackerrank")
+                        .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                        .addHeader("Accept", "application/json")
+                        .build();
+                
+                try (Response response = httpClient.newCall(apiRequest).execute()) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        String responseBody = response.body().string();
+                        JsonNode contestsArray = objectMapper.readTree(responseBody);
                         
-                        Contest contest = Contest.builder()
-                                .name(name)
-                                .platform("HackerRank")
-                                .url(url)
-                                .startTime(startTime)
-                                .endTime(endTime)
-                                .durationMinutes(Long.valueOf(120L))
-                                .build();
-                        contests.add(contest);
-                    }
-                    
-                } catch (Exception contestParseError) {
-                    System.err.println("Error parsing individual HackerRank contest: " + contestParseError.getMessage());
-                }
-            }
-            
-            // Alternative approach: Try to use HackerRank's API if available
-            if (contests.isEmpty()) {
-                try {
-                    Request apiRequest = new Request.Builder()
-                            .url("https://www.hackerrank.com/rest/contests/upcoming")
-                            .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                            .addHeader("Accept", "application/json")
-                            .build();
-                    
-                    try (Response response = httpClient.newCall(apiRequest).execute()) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            String responseBody = response.body().string();
-                            JsonNode root = objectMapper.readTree(responseBody);
+                        if (contestsArray.isArray()) {
+                            System.out.println("Found " + contestsArray.size() + " HackerRank contests from kontests.net");
                             
-                            if (root.has("models")) {
-                                JsonNode contestsArray = root.get("models");
-                                
-                                for (JsonNode contestNode : contestsArray) {
-                                    String contestName = contestNode.get("name").asText();
-                                    String contestSlug = contestNode.get("slug").asText();
-                                    String startTimeEpoch = contestNode.get("start_time").asText();
-                                    String endTimeEpoch = contestNode.get("end_time").asText();
+                            for (JsonNode contestNode : contestsArray) {
+                                try {
+                                    String name = contestNode.get("name").asText();
+                                    String url = contestNode.get("url").asText();
+                                    String startTimeStr = contestNode.get("start_time").asText();
+                                    String endTimeStr = contestNode.get("end_time").asText();
+                                    long durationSeconds = contestNode.get("duration").asLong();
                                     
-                                    try {
-                                        LocalDateTime startTime = parseHackerRankTime(startTimeEpoch);
-                                        LocalDateTime endTime = parseHackerRankTime(endTimeEpoch);
-                                        
-                                        if (startTime != null && endTime != null && startTime.isAfter(LocalDateTime.now())) {
-                                            String contestUrl = "https://www.hackerrank.com/contests/" + contestSlug;
-                                            long duration = java.time.Duration.between(startTime, endTime).toMinutes();
-                                            
-                                            Contest contest = Contest.builder()
-                                                    .name(contestName)
-                                                    .platform("HackerRank")
-                                                    .url(contestUrl)
-                                                    .startTime(startTime)
-                                                    .endTime(endTime)
-                                                    .durationMinutes(Long.valueOf(duration))
-                                                    .build();
-                                            contests.add(contest);
-                                        }
-                                    } catch (Exception timeParseError) {
-                                        System.err.println("Error parsing HackerRank time for: " + contestName);
+                                    // Parse ISO 8601 timestamps
+                                    LocalDateTime startTime = LocalDateTime.parse(startTimeStr.substring(0, 19));
+                                    LocalDateTime endTime = LocalDateTime.parse(endTimeStr.substring(0, 19));
+                                    
+                                    // Only include future contests
+                                    if (startTime.isAfter(LocalDateTime.now())) {
+                                        Contest contest = Contest.builder()
+                                                .name(name)
+                                                .platform("HackerRank")
+                                                .url(url)
+                                                .startTime(startTime)
+                                                .endTime(endTime)
+                                                .durationMinutes(Long.valueOf(durationSeconds / 60))
+                                                .build();
+                                        contests.add(contest);
+                                        System.out.println("✅ Added HackerRank contest: " + name);
                                     }
+                                } catch (Exception contestParseError) {
+                                    System.err.println("Error parsing HackerRank contest from kontests.net: " + contestParseError.getMessage());
                                 }
                             }
                         }
+                    } else {
+                        System.err.println("Kontests.net API returned status: " + response.code());
                     }
-                } catch (Exception apiError) {
-                    System.err.println("HackerRank API approach failed: " + apiError.getMessage());
                 }
+            } catch (Exception apiError) {
+                System.err.println("Kontests.net API failed: " + apiError.getMessage());
             }
+            
             
         } catch (Exception e) {
             System.err.println("Error fetching HackerRank contests: " + e.getMessage());
         }
         
+        System.out.println("HackerRank contests fetched: " + contests.size());
         return contests;
     }
     
@@ -499,60 +678,148 @@ public class ContestFetcherService {
         List<Contest> contests = new ArrayList<>();
         
         try {
-            // Try HackerEarth API first
-            try {
-                Request apiRequest = new Request.Builder()
-                        .url("https://www.hackerearth.com/api/v4/events/upcoming/")
-                        .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                        .addHeader("Accept", "application/json")
-                        .build();
-                
-                try (Response response = httpClient.newCall(apiRequest).execute()) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        String responseBody = response.body().string();
-                        JsonNode root = objectMapper.readTree(responseBody);
-                        
-                        if (root.has("response")) {
-                            JsonNode eventsArray = root.get("response");
+            System.out.println("Fetching HackerEarth contests...");
+            
+            // Try multiple HackerEarth API endpoints
+            String[] heApiUrls = {
+                "https://www.hackerearth.com/ICEAPI/events/upcoming/",
+                "https://www.hackerearth.com/api/v4/events/upcoming/",
+                "https://www.hackerearth.com/api/events/upcoming/",
+                "https://api.hackerearth.com/v4/events/upcoming/"
+            };
+            
+            for (String apiUrl : heApiUrls) {
+                try {
+                    Request apiRequest = new Request.Builder()
+                            .url(apiUrl)
+                            .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                            .addHeader("Accept", "application/json, text/plain, */*")
+                            .addHeader("Accept-Language", "en-US,en;q=0.9")
+                            .addHeader("Referer", "https://www.hackerearth.com/challenges/")
+                            .addHeader("X-Requested-With", "XMLHttpRequest")
+                            .build();
+                    
+                    try (Response response = httpClient.newCall(apiRequest).execute()) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            String responseBody = response.body().string();
                             
-                            for (JsonNode eventNode : eventsArray) {
-                                if (eventNode.has("event") && eventNode.get("event").has("type") &&
-                                    "contest".equalsIgnoreCase(eventNode.get("event").get("type").asText())) {
+                            // Check if response is actually JSON
+                            if (responseBody.trim().startsWith("{") || responseBody.trim().startsWith("[")) {
+                                JsonNode root = objectMapper.readTree(responseBody);
+                                
+                                JsonNode eventsArray = null;
+                                if (root.has("response")) {
+                                    eventsArray = root.get("response");
+                                } else if (root.has("data")) {
+                                    eventsArray = root.get("data");
+                                } else if (root.has("events")) {
+                                    eventsArray = root.get("events");
+                                } else if (root.isArray()) {
+                                    eventsArray = root;
+                                }
+                                
+                                if (eventsArray != null && eventsArray.isArray()) {
+                                    System.out.println("Found " + eventsArray.size() + " HackerEarth events from API");
                                     
-                                    JsonNode event = eventNode.get("event");
-                                    String name = event.get("title").asText();
-                                    String slug = event.get("slug").asText();
-                                    String startTimeStr = event.get("start_tz").asText();
-                                    String endTimeStr = event.get("end_tz").asText();
-                                    
-                                    try {
-                                        LocalDateTime startTime = parseHackerEarthTime(startTimeStr);
-                                        LocalDateTime endTime = parseHackerEarthTime(endTimeStr);
-                                        
-                                        if (startTime != null && endTime != null && startTime.isAfter(LocalDateTime.now())) {
-                                            String url = "https://www.hackerearth.com/challenges/competitive/" + slug + "/";
-                                            long duration = java.time.Duration.between(startTime, endTime).toMinutes();
+                                    for (JsonNode eventNode : eventsArray) {
+                                        try {
+                                            String name = "";
+                                            String slug = "";
+                                            String eventType = "";
                                             
-                                            Contest contest = Contest.builder()
-                                                    .name(name)
-                                                    .platform("HackerEarth")
-                                                    .url(url)
-                                                    .startTime(startTime)
-                                                    .endTime(endTime)
-                                                    .durationMinutes(Long.valueOf(duration))
-                                                    .build();
-                                            contests.add(contest);
+                                            // Handle different JSON structures
+                                            JsonNode event = eventNode.has("event") ? eventNode.get("event") : eventNode;
+                                            
+                                            if (event.has("title")) {
+                                                name = event.get("title").asText();
+                                            } else if (event.has("name")) {
+                                                name = event.get("name").asText();
+                                            }
+                                            
+                                            if (event.has("slug")) {
+                                                slug = event.get("slug").asText();
+                                            } else if (event.has("id")) {
+                                                slug = event.get("id").asText();
+                                            }
+                                            
+                                            if (event.has("type")) {
+                                                eventType = event.get("type").asText();
+                                            } else if (event.has("event_type")) {
+                                                eventType = event.get("event_type").asText();
+                                            }
+                                            
+                                            // Only process contests/competitions
+                                            if (!name.isEmpty() && 
+                                                ("contest".equalsIgnoreCase(eventType) || 
+                                                 "competition".equalsIgnoreCase(eventType) ||
+                                                 name.toLowerCase().contains("contest") ||
+                                                 name.toLowerCase().contains("challenge"))) {
+                                                
+                                                LocalDateTime startTime = null;
+                                                LocalDateTime endTime = null;
+                                                
+                                                // Try different time field names
+                                                String[] startTimeFields = {"start_tz", "start_time", "starttime", "begin_time", "registration_start_time"};
+                                                String[] endTimeFields = {"end_tz", "end_time", "endtime", "finish_time", "registration_end_time"};
+                                                
+                                                for (String field : startTimeFields) {
+                                                    if (event.has(field) && !event.get(field).isNull()) {
+                                                        String timeValue = event.get(field).asText();
+                                                        startTime = parseHackerEarthTime(timeValue);
+                                                        if (startTime != null) break;
+                                                    }
+                                                }
+                                                
+                                                for (String field : endTimeFields) {
+                                                    if (event.has(field) && !event.get(field).isNull()) {
+                                                        String timeValue = event.get(field).asText();
+                                                        endTime = parseHackerEarthTime(timeValue);
+                                                        if (endTime != null) break;
+                                                    }
+                                                }
+                                                
+                                                if (startTime != null && startTime.isAfter(LocalDateTime.now())) {
+                                                    if (endTime == null) {
+                                                        endTime = startTime.plusHours(3); // Default duration
+                                                    }
+                                                    
+                                                    String url = slug.isEmpty() ?
+                                                        "https://www.hackerearth.com/challenges/" :
+                                                        "https://www.hackerearth.com/challenges/competitive/" + slug + "/";
+                                                    
+                                                    long duration = java.time.Duration.between(startTime, endTime).toMinutes();
+                                                    
+                                                    Contest contest = Contest.builder()
+                                                            .name(name)
+                                                            .platform("HackerEarth")
+                                                            .url(url)
+                                                            .startTime(startTime)
+                                                            .endTime(endTime)
+                                                            .durationMinutes(Long.valueOf(duration))
+                                                            .build();
+                                                    contests.add(contest);
+                                                    System.out.println("Added HackerEarth contest: " + name);
+                                                }
+                                            }
+                                        } catch (Exception eventParseError) {
+                                            System.err.println("Error parsing HackerEarth event: " + eventParseError.getMessage());
                                         }
-                                    } catch (Exception timeParseError) {
-                                        System.err.println("Error parsing HackerEarth time for: " + name);
                                     }
                                 }
+                                
+                                if (!contests.isEmpty()) {
+                                    break; // Success with this API endpoint
+                                }
+                            } else {
+                                System.err.println("HackerEarth API " + apiUrl + " returned non-JSON response");
                             }
+                        } else {
+                            System.err.println("HackerEarth API " + apiUrl + " returned status: " + response.code());
                         }
                     }
+                } catch (Exception apiError) {
+                    System.err.println("Error with HackerEarth API " + apiUrl + ": " + apiError.getMessage());
                 }
-            } catch (Exception apiError) {
-                System.err.println("HackerEarth API approach failed, trying web scraping: " + apiError.getMessage());
             }
             
             // Fallback to web scraping if API fails
@@ -688,7 +955,41 @@ public class ContestFetcherService {
     // Helper method to parse HackerEarth time
     private LocalDateTime parseHackerEarthTime(String timeStr) {
         try {
-            // HackerEarth time format: "2024-01-01T15:00:00Z" or similar
+            // Clean and normalize the time string
+            timeStr = timeStr.trim();
+            
+            // Handle HackerEarth timezone format: "2025-07-20 23:55:00+05:30"
+            if (timeStr.contains("+") && timeStr.length() > 19) {
+                // Extract just the date and time part before timezone
+                String dateTimePart = timeStr.substring(0, 19);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                return LocalDateTime.parse(dateTimePart, formatter);
+            }
+            
+            // Handle format like "11:55 PM IST (Asia/Kolkata)"
+            if (timeStr.contains("PM") || timeStr.contains("AM")) {
+                // Extract time and convert to 24-hour format
+                String[] parts = timeStr.split(" ");
+                if (parts.length >= 2) {
+                    String timePart = parts[0]; // "11:55"
+                    String ampm = parts[1];     // "PM"
+                    
+                    String[] timeParts = timePart.split(":");
+                    int hour = Integer.parseInt(timeParts[0]);
+                    int minute = Integer.parseInt(timeParts[1]);
+                    
+                    if ("PM".equalsIgnoreCase(ampm) && hour != 12) {
+                        hour += 12;
+                    } else if ("AM".equalsIgnoreCase(ampm) && hour == 12) {
+                        hour = 0;
+                    }
+                    
+                    // Default to tomorrow at the specified time
+                    return LocalDateTime.now().plusDays(1).withHour(hour).withMinute(minute).withSecond(0).withNano(0);
+                }
+            }
+            
+            // Handle Z suffix
             if (timeStr.endsWith("Z")) {
                 return LocalDateTime.parse(timeStr.substring(0, timeStr.length() - 1));
             }
@@ -699,12 +1000,17 @@ public class ContestFetcherService {
             }
             
             // Try standard format
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            return LocalDateTime.parse(timeStr, formatter);
+            if (timeStr.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                return LocalDateTime.parse(timeStr, formatter);
+            }
+            
+            // Default fallback
+            return LocalDateTime.now().plusDays(1);
             
         } catch (Exception e) {
-            System.err.println("Error parsing HackerEarth time: " + timeStr);
-            return null;
+            System.err.println("Error parsing HackerEarth time: " + timeStr + " - " + e.getMessage());
+            return LocalDateTime.now().plusDays(1); // Return reasonable default
         }
     }
     
@@ -841,20 +1147,6 @@ public class ContestFetcherService {
                 }
             }
             
-            // If no contests found through scraping, add some sample contests for testing
-            if (contests.isEmpty()) {
-                System.out.println("No GeeksforGeeks contests found via scraping, adding sample contests...");
-                LocalDateTime sampleStart = LocalDateTime.now().plusDays(2);
-                Contest sampleContest = Contest.builder()
-                        .name("GeeksforGeeks Weekly Contest")
-                        .platform("GeeksforGeeks")
-                        .url("https://practice.geeksforgeeks.org/contest/")
-                        .startTime(sampleStart)
-                        .endTime(sampleStart.plusHours(2))
-                        .durationMinutes(Long.valueOf(120L))
-                        .build();
-                contests.add(sampleContest);
-            }
             
         } catch (Exception e) {
             System.err.println("Error fetching GeeksforGeeks contests: " + e.getMessage());
@@ -978,20 +1270,6 @@ public class ContestFetcherService {
                 }
             }
             
-            // If no contests found through scraping, add sample contest for testing
-            if (contests.isEmpty()) {
-                System.out.println("No CS Academy contests found via scraping, adding sample contest...");
-                LocalDateTime sampleStart = LocalDateTime.now().plusDays(3);
-                Contest sampleContest = Contest.builder()
-                        .name("CS Academy Round")
-                        .platform("CS Academy")
-                        .url("https://csacademy.com/contests/")
-                        .startTime(sampleStart)
-                        .endTime(sampleStart.plusHours(2))
-                        .durationMinutes(Long.valueOf(120L))
-                        .build();
-                contests.add(sampleContest);
-            }
             
         } catch (Exception e) {
             System.err.println("Error fetching CS Academy contests: " + e.getMessage());
@@ -1223,20 +1501,6 @@ public class ContestFetcherService {
                 }
             }
             
-            // If no contests found through API or scraping, add sample contest for testing
-            if (contests.isEmpty()) {
-                System.out.println("No TopCoder contests found, adding sample contest...");
-                LocalDateTime sampleStart = LocalDateTime.now().plusDays(4);
-                Contest sampleContest = Contest.builder()
-                        .name("TopCoder SRM")
-                        .platform("TopCoder")
-                        .url("https://www.topcoder.com/challenges/")
-                        .startTime(sampleStart)
-                        .endTime(sampleStart.plusHours(2))
-                        .durationMinutes(Long.valueOf(120L))
-                        .build();
-                contests.add(sampleContest);
-            }
             
         } catch (Exception e) {
             System.err.println("Error fetching TopCoder contests: " + e.getMessage());
@@ -1325,6 +1589,36 @@ public class ContestFetcherService {
             return now.plusDays(1);
         } catch (Exception e) {
             return LocalDateTime.now().plusDays(1);
+        }
+    }
+    
+    // Helper method to parse CodeChef API dates
+    private LocalDateTime parseCodeChefApiDate(String dateStr) {
+        try {
+            // CodeChef API date format variations:
+            // "05 Jul 2025  00:00:00" 
+            // "2024-01-01 15:00:00" 
+            // "2024-01-01T15:00:00"
+            
+            if (dateStr.contains("T")) {
+                return LocalDateTime.parse(dateStr.substring(0, 19));
+            } else if (dateStr.matches("\\d{2} \\w{3} \\d{4}\\s+\\d{2}:\\d{2}:\\d{2}")) {
+                // Handle format like "05 Jul 2025  00:00:00"
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy  HH:mm:ss");
+                return LocalDateTime.parse(dateStr, formatter);
+            } else if (dateStr.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+                // Handle format like "2024-01-01 15:00:00"
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                return LocalDateTime.parse(dateStr, formatter);
+            } else {
+                // Try to clean up the date string and parse
+                String cleanDateStr = dateStr.trim().replaceAll("\\s+", " ");
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm:ss");
+                return LocalDateTime.parse(cleanDateStr, formatter);
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing CodeChef API date: '" + dateStr + "' - " + e.getMessage());
+            return null;
         }
     }
 }
