@@ -58,4 +58,16 @@ public interface ContestRepository extends MongoRepository<Contest, String> {
     // Find active contests (currently running)
     @Query("{'startTime': {$lte: ?0}, 'endTime': {$gte: ?0}}")
     List<Contest> findActiveContests(LocalDateTime currentTime);
+    
+    // Count upcoming contests (optimized)
+    @Query(value = "{'startTime': {$gte: ?0}}", count = true)
+    long countUpcomingContests(LocalDateTime currentTime);
+    
+    // Count active contests (optimized)
+    @Query(value = "{'startTime': {$lte: ?0}, 'endTime': {$gte: ?0}}", count = true)
+    long countActiveContests(LocalDateTime currentTime);
+    
+    // Count contests by platform (case insensitive)
+    @Query(value = "{'platform': {$regex: ?0, $options: 'i'}}", count = true)
+    long countByPlatformIgnoreCase(String platform);
 }

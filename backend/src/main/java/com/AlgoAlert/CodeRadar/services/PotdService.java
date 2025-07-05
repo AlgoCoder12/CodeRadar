@@ -16,26 +16,12 @@ public class PotdService {
     
     @Autowired
     private CodeforcesService codeforcesService;
-    
-    @Autowired
-    private GeeksForGeeksService geeksForGeeksService;
-
-
-    
-    @Autowired
-    private CodeChefService codeChefService;
-    
-    @Autowired
-    private HackerRankService hackerRankService;
 
 
     public ExternalProblemDTO getProblemByPlatform(String platform) {
         return switch (Platform.valueOf(platform.toUpperCase())) {
             case LEETCODE -> leetCodeService.getDailyProblem();
             case CODEFORCES -> codeforcesService.getDailyProblem();
-            case GEEKSFORGEEKS -> geeksForGeeksService.getDailyProblem();
-            case CODECHEF -> codeChefService.getDailyProblem();
-            case HACKERRANK -> hackerRankService.getDailyProblem();
         };
     }
 
@@ -47,10 +33,7 @@ public class PotdService {
     public List<ExternalProblemDTO> getAllProblems() {
         return List.of(
             leetCodeService.getDailyProblem(),
-            codeforcesService.getDailyProblem(),
-            geeksForGeeksService.getDailyProblem(),
-            codeChefService.getDailyProblem(),
-            hackerRankService.getDailyProblem()
+            codeforcesService.getDailyProblem()
         ).stream()
         .filter(problem -> problem != null)
         .toList();

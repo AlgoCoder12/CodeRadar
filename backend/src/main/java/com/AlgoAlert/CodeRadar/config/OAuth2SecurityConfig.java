@@ -2,6 +2,8 @@ package com.AlgoAlert.CodeRadar.config;
 
 import com.AlgoAlert.CodeRadar.services.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -12,8 +14,10 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 //@RequiredArgsConstructor
-@Order(1)
+//@Order(1)
 public class OAuth2SecurityConfig {
+
+    // @Autowired
     private final CustomOAuth2UserService customOAuth2UserService;
 
     public OAuth2SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {

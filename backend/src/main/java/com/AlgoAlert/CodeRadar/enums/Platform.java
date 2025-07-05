@@ -3,10 +3,7 @@ package com.AlgoAlert.CodeRadar.enums;
 
 public enum Platform {
     LEETCODE("LeetCode"),
-    CODEFORCES("Codeforces"),
-    GEEKSFORGEEKS("GeeksForGeeks"),
-    CODECHEF("CodeChef"),
-    HACKERRANK("HackerRank");
+    CODEFORCES("Codeforces");
 
     private final String displayName;
 
