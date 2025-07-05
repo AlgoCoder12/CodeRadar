@@ -29,33 +29,22 @@ const allContests = [
     link: "https://www.codechef.com/START105",
     status: "attended",
   },
-  // Add more contest entries here...
+  // Add more contests here...
 ];
 
 export default function DashboardPage({ user }) {
   const [selectedPlatform, setSelectedPlatform] = useState("All");
-  const [showAttended, setShowAttended] = useState(true);
-  const [showMissed, setShowMissed] = useState(true);
+  const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const contestsPerPage = 4;
 
   const platforms = ["All", ...new Set(allContests.map((c) => c.platform))];
 
-  const filteredContests = allContests.filter((contest) => {
-    const matchPlatform =
-      selectedPlatform === "All" || contest.platform === selectedPlatform;
-    const matchStatus =
-      (showAttended && contest.status === "attended") ||
-      (showMissed && contest.status === "missed");
-    return matchPlatform && matchStatus;
-  });
+  // Stats
+  const totalAttended = allContests.filter((c) => c.status === "attended").length;
+  const totalMissed = allContests.filter((c) => c.status === "missed").length;
 
-  const totalPages = Math.ceil(filteredContests.length / contestsPerPage);
-  const paginatedContests = filteredContests.slice(
-    (currentPage - 1) * contestsPerPage,
-    currentPage * contestsPerPage
-  );
-
+  // Chart data
   const chartData = platforms
     .filter((p) => p !== "All")
     .map((platform) => {
@@ -68,55 +57,50 @@ export default function DashboardPage({ user }) {
       return { platform, attended, missed };
     });
 
+  // Filter & search
+  const filteredContests = allContests.filter((contest) => {
+    const matchPlatform =
+      selectedPlatform === "All" || contest.platform === selectedPlatform;
+    const matchSearch = contest.name.toLowerCase().includes(searchText.toLowerCase());
+    return matchPlatform && matchSearch;
+  });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredContests.length / contestsPerPage);
+  const paginatedContests = filteredContests.slice(
+    (currentPage - 1) * contestsPerPage,
+    currentPage * contestsPerPage
+  );
+
   return (
-    <section className="max-w-6xl mx-auto px-4 py-10">
-      <h1 className="text-4xl font-bold text-purple-600 mb-6">
+    <section className="max-w-7xl mx-auto px-4 py-10 space-y-8">
+      <h1 className="text-4xl font-bold text-purple-600">
         Welcome back, {user?.name}!
       </h1>
 
-      <div className="flex flex-wrap items-center gap-4 mb-6">
-        <label className="text-sm font-medium">
-          Platform:{" "}
-          <select
-            value={selectedPlatform}
-            onChange={(e) => {
-              setSelectedPlatform(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="ml-2 border dark:bg-gray-800 border-gray-300 rounded px-2 py-1"
-          >
-            {platforms.map((p) => (
-              <option key={p}>{p}</option>
-            ))}
-          </select>
-        </label>
-
-        <label className="text-sm font-medium">
-          <input
-            type="checkbox"
-            checked={showAttended}
-            onChange={() => setShowAttended(!showAttended)}
-            className="mr-1"
-          />
-          Attended
-        </label>
-
-        <label className="text-sm font-medium">
-          <input
-            type="checkbox"
-            checked={showMissed}
-            onChange={() => setShowMissed(!showMissed)}
-            className="mr-1"
-          />
-          Missed
-        </label>
+      {/* Hero Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
+          <p className="text-sm text-gray-500">Total Contests</p>
+          <p className="text-2xl font-bold">{allContests.length}</p>
+        </div>
+        <div className="bg-green-100 dark:bg-green-900 p-4 rounded shadow text-center">
+          <p className="text-sm text-green-800 dark:text-green-200">Attended</p>
+          <p className="text-2xl font-bold text-green-700 dark:text-green-300">
+            {totalAttended}
+          </p>
+        </div>
+        <div className="bg-red-100 dark:bg-red-900 p-4 rounded shadow text-center">
+          <p className="text-sm text-red-800 dark:text-red-200">Missed</p>
+          <p className="text-2xl font-bold text-red-700 dark:text-red-300">
+            {totalMissed}
+          </p>
+        </div>
       </div>
 
       {/* Chart */}
-      <div className="mb-10 bg-white dark:bg-gray-900 p-4 rounded shadow">
-        <h2 className="text-2xl font-semibold mb-4 text-purple-600">
-          Contest Summary
-        </h2>
+      <div className="bg-white dark:bg-gray-900 p-4 rounded shadow">
+        <h2 className="text-2xl font-semibold mb-4 text-purple-600">Contest Summary</h2>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
             <XAxis dataKey="platform" />
@@ -129,44 +113,74 @@ export default function DashboardPage({ user }) {
         </ResponsiveContainer>
       </div>
 
+      {/* Filters & Search */}
+      <div className="flex flex-col md:flex-row items-center gap-4">
+        <select
+          value={selectedPlatform}
+          onChange={(e) => {
+            setSelectedPlatform(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="border dark:bg-gray-800 border-gray-300 rounded px-2 py-1"
+        >
+          {platforms.map((p) => (
+            <option key={p}>{p}</option>
+          ))}
+        </select>
+
+        <input
+          type="text"
+          placeholder="Search contests..."
+          value={searchText}
+          onChange={(e) => {
+            setSearchText(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="border dark:bg-gray-800 border-gray-300 rounded px-2 py-1 w-full md:w-1/2"
+        />
+      </div>
+
       {/* Contest List */}
       <div className="space-y-4">
-        {paginatedContests.map((contest, i) => (
-          <motion.div
-            key={contest.name}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="p-4 border rounded flex justify-between items-center dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition"
-          >
-            <div>
-              <h2 className="text-xl font-semibold">{contest.name}</h2>
-              <a
-                href={contest.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                Contest Link
-              </a>
-            </div>
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${
-                contest.status === "attended"
-                  ? "bg-green-500 text-white"
-                  : "bg-red-500 text-white"
-              }`}
+        {paginatedContests.length === 0 ? (
+          <p className="text-gray-500">No contests found.</p>
+        ) : (
+          paginatedContests.map((contest, i) => (
+            <motion.div
+              key={contest.name}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="p-4 border rounded flex justify-between items-center dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition"
             >
-              {contest.status.charAt(0).toUpperCase() +
-                contest.status.slice(1)}
-            </span>
-          </motion.div>
-        ))}
+              <div>
+                <h2 className="text-lg font-semibold">{contest.name}</h2>
+                <a
+                  href={contest.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
+                >
+                  View Contest
+                </a>
+              </div>
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  contest.status === "attended"
+                    ? "bg-green-500 text-white"
+                    : "bg-red-500 text-white"
+                }`}
+              >
+                {contest.status.charAt(0).toUpperCase() + contest.status.slice(1)}
+              </span>
+            </motion.div>
+          ))
+        )}
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-6 flex justify-center gap-3">
+        <div className="flex justify-center gap-2 mt-4">
           {Array.from({ length: totalPages }, (_, idx) => (
             <button
               key={idx}
