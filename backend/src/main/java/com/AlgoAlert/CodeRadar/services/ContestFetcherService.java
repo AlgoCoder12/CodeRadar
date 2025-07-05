@@ -142,11 +142,9 @@ public class ContestFetcherService {
                         .url(fullUrl)
                         .addHeader("User-Agent", "Mozilla/5.0 (CodeRadar Contest Fetcher)")
                         .build();
-//                System.out.println(request);
 
                 //Executes the request if its successful and the body is not null
                 try (Response response = httpClient.newCall(request).execute()) {
-//                    System.out.println(response);
                     if (response.isSuccessful() && response.body() != null) {
                         String responseBody = response.body().string();
                         JsonNode root = objectMapper.readTree(responseBody);
