@@ -94,7 +94,7 @@ export default function POTDPage() {
 
               <button
                 onClick={() => handleSolveClick(potd.problemUrl)}
-                className="inline-block bg-purple-600 text-white font-semibold px-6 py-2 rounded-lg shadow hover:bg-purple-700 transition"
+                className="inline-block bg-green-600 text-white font-semibold px-6 py-2 rounded-lg shadow hover:bg-green-700 transition"
               >
                 Solve
               </button>
