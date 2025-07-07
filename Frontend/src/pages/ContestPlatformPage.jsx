@@ -59,7 +59,7 @@ export default function ContestPlatformPage() {
           Explore upcoming contests and register to start practicing!
         </p>
 
-        {/* Date Filter */}
+        {/* Date Filter
         <div className="mb-10">
           <label
             htmlFor="date-filter"
@@ -83,7 +83,7 @@ export default function ContestPlatformPage() {
               Clear
             </button>
           )}
-        </div>
+        </div> */}
 
         {/* Contest List */}
         {filteredContests.length === 0 ? (
@@ -111,7 +111,7 @@ export default function ContestPlatformPage() {
                 <div className="flex gap-4 mt-4 sm:mt-0 items-start sm:items-center">
                   <button
                     onClick={() => handleRegister(contest.url)}
-                    className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl shadow-md transition"
+                    className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-md transition"
                   >
                     Register
                   </button>

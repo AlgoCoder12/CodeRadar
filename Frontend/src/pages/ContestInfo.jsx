@@ -142,20 +142,20 @@ export default function ContestInfo() {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 justify-center">
           {platforms.map(({ name, logo }) => (
-            <Link
-              key={name}
-              to={`/contest-info/${name}`}
-              className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:scale-105 hover:shadow-xl transition-transform duration-300"
-            >
-              <img
-                src={logo}
-                alt={`${name} Logo`}
-                className="h-20 w-20 object-contain"
-              />
-              <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                {name}
-              </span>
-            </Link>
+           <Link
+           key={name}
+           to={`/contest-check/${name}`} // changed from `/contest-info/${name}`
+           className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:scale-105 hover:shadow-xl transition-transform duration-300"
+         >
+           <img
+             src={logo}
+             alt={`${name} Logo`}
+             className="h-20 w-20 object-contain"
+           />
+           <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+             {name}
+           </span>
+         </Link>
           ))}
         </div>
 
