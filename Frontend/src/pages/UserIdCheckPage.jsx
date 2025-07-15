@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import axios from "axios";
 
 // Platform details with logos
 const platforms = [
@@ -41,7 +42,7 @@ export default function UserIdCheckPage() {
   const [userId, setUserId] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const {token, url} = useAuth();
   useEffect(() => {
     // If still loading auth, wait
     if (authLoading) return;
@@ -52,55 +53,35 @@ export default function UserIdCheckPage() {
     }
   }, [authLoading, user]);
 
-  const validateUserId = async (platform, username) => {
-    switch (platform.toLowerCase()) {
-      case "codeforces":
-        try {
-          const res = await fetch(
-            `https://codeforces.com/api/user.info?handles=${username}`
-          );
-          const data = await res.json();
-          return data.status === "OK";
-        } catch {
-          return false;
-        }
-
-      case "leetcode":
-        try {
-          const res = await fetch(`https://leetcode.com/${username}/`);
-          return res.status === 200;
-        } catch {
-          return false;
-        }
-
-      case "atcoder":
-        try {
-          const res = await fetch(`https://atcoder.jp/users/${username}`);
-          return res.status === 200;
-        } catch {
-          return false;
-        }
-
-      case "codechef":
-        try {
-          const res = await fetch(`https://www.codechef.com/users/${username}`);
-          return res.status === 200;
-        } catch {
-          return false;
-        }
-
-      case "hackerrank":
-        try {
-          const res = await fetch(
-            `https://www.hackerrank.com/rest/contests/master/hackers/${username}/profile`
-          );
-          return res.status === 200;
-        } catch {
-          return false;
-        }
-
-      default:
-        return false;
+  // "codeforcesHandle": "abhik_01",
+  //   "leetcodeHandle": "dvmnabhi",
+  //   "codechefHandle": "dvmnabhi",
+  //   "atcoderHandle": null,
+  //   "hackerrankHandle": null,
+  //   "hackerearthHandle": null,
+  
+  const validateUserId = async (platformName, username) => {
+    try {
+      const obj = {}
+      const platform = platformName.toLowerCase();
+      let handle;
+      if (platform === 'codeforces') handle = "codeforcesHandle";
+      if (platform === 'leetcode') handle = "leetcodeHandle";
+      if (platform === 'codechef') handle = "codechefHandle";
+      if (platform === 'atcoder') handle = "atcoderHandle";
+      if (platform === 'hackerrank') handle = "hackerrankHandle";
+      if (platform === 'hackerearth') handle = "hackerearthHandle";
+      if (handle) {
+        obj[handle] = username;
+      }
+      console.log(obj);
+      const response = await axios.patch(`${url}/users/update-handles`, obj, {headers: {Authorization: `Bearer ${token}`}})
+      const {data} = response;
+      
+      return data[handle] === username;
+    } catch (error) {
+      console.log(error)
+      return false;
     }
   };
 

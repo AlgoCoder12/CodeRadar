@@ -49,6 +49,7 @@ AuthController {
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
         try {
             User user = req.getUsername() != null ? userService.findByUsername(req.getUsername()) : userService.findByEmail(req.getEmail());
+            // System.out.println(user.toString());
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
             }

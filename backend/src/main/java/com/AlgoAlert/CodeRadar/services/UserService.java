@@ -29,6 +29,7 @@ public class UserService {
 //    @Autowired
     private AuthenticationManager authenticationManager;
 
+
     public UserService(UserRepo userRepo,
                        @Lazy AuthenticationManager authenticationManager) {
         this.userRepo = userRepo;
@@ -86,8 +87,10 @@ public class UserService {
         System.out.println("Attempting to verify user: " + username);
         try {
             Authentication auth = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
-            );
+                new UsernamePasswordAuthenticationToken(username, password)
+                );
+            System.out.println(auth);
+            System.out.println("Auth "+username+" "+password);
             System.out.println("Authentication successful for user: " + username);
             return jwtService.generateToken(username);
         } catch (Exception e) {
