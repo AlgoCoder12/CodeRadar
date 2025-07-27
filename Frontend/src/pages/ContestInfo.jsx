@@ -54,8 +54,15 @@ export default function ContestInfo() {
           {platforms.map(({ name, logo }) => (
            <Link
            key={name}
-           to={user[getHandle(name)] === null ? `/contest-check/${name}` : `/contest-info/${name}`} // changed from `/contest-info/${name}`
-          //  to={`/contest-check/${name}`} // changed from `/contest-info/${name}`
+          //  to={
+          //   user && user[getHandle(name)] !== undefined && user[getHandle(name)] !== null
+          //     ? `/contest-info/${name}`
+          //     : `/contest-check/${name}`
+          // }
+          to={`/contest-info/${name}`}
+          
+          //  to={user[getHandle(name)] === null ? `/contest-check/${name}` : `/contest-info/${name}`} // changed from `/contest-info/${name}`
+          // //  to={`/contest-check/${name}`} // changed from `/contest-info/${name}`
            className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:scale-105 hover:shadow-xl transition-transform duration-300"
          >
            <img
