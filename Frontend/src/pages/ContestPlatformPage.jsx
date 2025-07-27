@@ -392,7 +392,7 @@ export default function ContestPlatformPage() {
         {/* Back Button */}
         <div className="text-center mt-8 flex flex-col items-center">
           <button
-            onClick={() => navigate('/contest-info')}
+            onClick={() => navigate('/contestinfo')}
             className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 font-medium cursor-pointer"
           >
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -400,7 +400,7 @@ export default function ContestPlatformPage() {
             </svg>
             Back to Platform Selection
           </button>
-          <button
+          {/* <button
             onClick={() => navigate(`/contest-check/${platformInfo.displayName}`)}
             className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 font-medium cursor-pointer"
           >
@@ -408,7 +408,7 @@ export default function ContestPlatformPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Update {platformInfo.displayName} handle
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

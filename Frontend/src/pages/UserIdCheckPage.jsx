@@ -60,52 +60,82 @@ export default function UserIdCheckPage() {
   //   "hackerrankHandle": null,
   //   "hackerearthHandle": null,
   
-  const validateUserId = async (platformName, username) => {
-    try {
-      const obj = {}
-      const platform = platformName.toLowerCase();
-      let handle;
-      if (platform === 'codeforces') handle = "codeforcesHandle";
-      if (platform === 'leetcode') handle = "leetcodeHandle";
-      if (platform === 'codechef') handle = "codechefHandle";
-      if (platform === 'atcoder') handle = "atcoderHandle";
-      if (platform === 'hackerrank') handle = "hackerrankHandle";
-      if (platform === 'hackerearth') handle = "hackerearthHandle";
-      if (handle) {
-        obj[handle] = username;
-      }
-      console.log(obj);
-      const response = await axios.patch(`${url}/users/update-handles`, obj, {headers: {Authorization: `Bearer ${token}`}})
-      const {data} = response;
+  // const validateUserId = async (platformName, username) => {
+  //   try {
+  //     const obj = {}
+  //     const platform = platformName.toLowerCase();
+  //     let handle;
+  //     if (platform === 'codeforces') handle = "codeforcesHandle";
+  //     if (platform === 'leetcode') handle = "leetcodeHandle";
+  //     if (platform === 'codechef') handle = "codechefHandle";
+  //     if (platform === 'atcoder') handle = "atcoderHandle";
+  //     if (platform === 'hackerrank') handle = "hackerrankHandle";
+  //     if (platform === 'hackerearth') handle = "hackerearthHandle";
+  //     if (handle) {
+  //       obj[handle] = username;
+  //     }
+  //     console.log(obj);
+  //     const response = await axios.patch(`${url}/users/update-handles`, obj, {headers: {Authorization: `Bearer ${token}`}})
+  //     const {data} = response;
       
-      return data[handle] === username;
-    } catch (error) {
-      console.log(error)
-      return false;
-    }
-  };
+  //     return data[handle] === username;
+  //   } catch (error) {
+  //     console.log(error)
+  //     return false;
+  //   }
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
+  
     if (!user) {
       setError("⚠️ Please login first to continue.");
       return;
     }
-
+  
     setLoading(true);
-    const valid = await validateUserId(platform, userId);
-
-    if (valid) {
-      // Proceed to next page with the ID (you can also pass userId as query if needed)
+  
+    try {
+      const obj = {};
+      const platformLower = platform.toLowerCase();
+  
+      const handleMap = {
+        codeforces: "codeforcesHandle",
+        leetcode: "leetcodeHandle",
+        codechef: "codechefHandle",
+        atcoder: "atcoderHandle",
+        hackerrank: "hackerrankHandle",
+        hackerearth: "hackerearthHandle",
+      };
+  
+      const handle = handleMap[platformLower];
+      if (!handle) {
+        setError("⚠️ Unsupported platform.");
+        setLoading(false);
+        return;
+      }
+  
+      obj[handle] = userId;
+  
+      await axios.patch(`${url}/users/update-handles`, obj, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
       navigate(`/contest-info/${platform}`, { state: { userId } });
-    } else {
-      setError("❌ Invalid username. Please enter a correct user ID.");
+  
+    } catch (error) {
+      console.error(error);
+      if (error.response?.data?.message) {
+        setError(`❌ ${error.response.data.message}`);
+      } else {
+        setError("❌ Failed to save handle. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
+  
 
   if (authLoading) {
     return (
