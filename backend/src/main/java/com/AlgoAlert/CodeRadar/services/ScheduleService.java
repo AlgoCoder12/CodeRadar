@@ -52,26 +52,36 @@ public class ScheduleService {
             "temperature", 0.2
         );
         Request request = new Request.Builder()
-            .url(openRouterApiUrl)
-            .addHeader("Authorization", "Bearer " + openRouterApiKey)
-            .addHeader("Content-Type", "application/json")
-            .post(RequestBody.create(objectMapper.writeValueAsBytes(requestBody), MediaType.parse("application/json")))
-            .build();
+                .url(openRouterApiUrl)
+                .addHeader("Authorization", "Bearer " + openRouterApiKey)
+                .addHeader("Content-Type", "application/json")
+                .addHeader("HTTP-Referer", "http://localhost:8080")  // Required for free tier
+                .addHeader("X-Title", "CodeRadar")  // Your application name
+                .post(RequestBody.create(objectMapper.writeValueAsBytes(requestBody), MediaType.parse("application/json")))
+                .build();
         System.out.println("Request "+ request);
 
         try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) throw new IOException("OpenRouter API error: " + response);
+            if (!response.isSuccessful()) {
+                String errorBody = response.body() != null ? response.body().string() : "No error body";
+                throw new IOException("OpenRouter API error: " + response + " - " + errorBody);
+            }
             System.out.println("Response "+ response);
             String responseBody = response.body().string();
-            System.out.println("reponseBody "+responseBody);
+            System.out.println("responseBody "+responseBody);
             // Parse the JSON array from the response (extract from choices[0].message.content)
             return objectMapper.readTree(responseBody)
-                .get("choices").get(0).get("message").get("content").asText();
+                    .get("choices").get(0).get("message").get("content").asText();
+        } catch (Exception e) {
+            System.err.println("Error calling OpenRouter API: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
     }
 
     /**
      * Uses OpenRouter API to parse the extracted text into structured schedule entries.
+     * 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
      */
     public List<ScheduleEntry> parseScheduleWithAI(String userId, String rawText) throws IOException {
         String prompt = "Extract a list of class schedule entries from the following university timetable text. " +
@@ -109,6 +119,7 @@ public class ScheduleService {
     public List<ScheduleEntry> getScheduleForUser(String userId) {
         return scheduleEntryRepository.findByUserId(userId);
     }
+
 
     /**
      * Scheduled job: logs upcoming classes for all users in the next hour (demo reminder).

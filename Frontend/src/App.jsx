@@ -9,6 +9,8 @@ import ContestPlatformPage from "./pages/ContestPlatformPage";
 import POTD from "./pages/POTD";
 import Signup from "./pages/SignUp";
 import { useAuth } from "./contexts/AuthContext";
+import UserIdCheckPage from "./pages/UserIdCheckPage";
+import TimeTable from "./pages/TimeTable"
 
 
 export default function App() {
@@ -73,12 +75,12 @@ export default function App() {
       >
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route
+          {/* <Route
             path="/dashboard"
             element={
               user ? <DashboardPage user={user} /> : <Navigate to="/login" replace />
             }
-          />
+          /> */}
           <Route
             path="/login"
             element={
@@ -93,7 +95,10 @@ export default function App() {
           />
           <Route path="/contestinfo" element={<ContestInfo />} />
           <Route path="/contest-info/:platform" element={<ContestPlatformPage />} />
+          <Route path="/contest-check/:platform" element={<UserIdCheckPage />} />
           <Route path="/potd" element={<POTD />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/timetable" element={<TimeTable/>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

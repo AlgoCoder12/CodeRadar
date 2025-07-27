@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 function FAQItem({ question, answer }) {
   const [open, setOpen] = React.useState(false);
@@ -21,6 +22,8 @@ function FAQItem({ question, answer }) {
 }
 
 export default function LandingPage() {
+  const { user } = useAuth();
+
   const platforms = [
     {
       name: "LeetCode",
@@ -95,8 +98,8 @@ export default function LandingPage() {
           ))}
         </div>
 
-        <Link to="/login">
-          <Button className="bg-purple-600 hover:bg-purple-700 px-8 py-4 text-white text-lg rounded-full shadow-md">
+        <Link to= {user ? "/contestinfo":"/login"}>
+          <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-3  font-bold transitiontext-lg rounded-full shadow-md">
             Start Solving Now 🚀
           </Button>
         </Link>

@@ -61,7 +61,6 @@ export const AuthProvider = ({ children }) => {
     try {
       // console.log(data);
       setLoading(true)
-      const formData = new FormData();
 
       const obj = {
         username: data.email,
@@ -124,10 +123,13 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setToken(null);
     localStorage.removeItem("token");
+    navigate("/login");
   };
 
+  
+
   return (
-    <AuthContext.Provider value={{ user, signup, login, logout, loading }}>
+    <AuthContext.Provider value={{ url,token,  user, signup, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -27,6 +27,10 @@ public class User {
     private boolean emailPrefs;
     private String codeforcesHandle;
     private String leetcodeHandle;
+    private String codechefHandle;
+    private String atcoderHandle;
+    private String hackerrankHandle;
+    private String hackerearthHandle;
     private int streak;
     private int points;
 }
