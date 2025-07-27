@@ -120,6 +120,7 @@ public class ScheduleService {
         return scheduleEntryRepository.findByUserId(userId);
     }
 
+
     /**
      * Scheduled job: logs upcoming classes for all users in the next hour (demo reminder).
      */
