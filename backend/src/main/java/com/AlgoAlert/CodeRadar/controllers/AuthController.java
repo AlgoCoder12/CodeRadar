@@ -48,11 +48,13 @@ AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
         try {
-            User user = req.getUsername() != null ? userService.findByUsername(req.getUsername()) : userService.findByEmail(req.getEmail());
+            User user = userService.findByEmail(req.getEmail());
             // System.out.println(user.toString());
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
             }
+            System.out.println(user.toString());
+            System.out.println(user.getPassword()+" "+req.getPassword());
             String token = userService.verify(user.getUsername(), req.getPassword());
             if (token == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");

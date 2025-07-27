@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -27,7 +28,7 @@ public class UserService {
     private JWTService jwtService;
 
 //    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
 
     public UserService(UserRepo userRepo,
@@ -39,7 +40,9 @@ public class UserService {
     @Autowired
     private EmailService emailService;
 
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+//    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+    @Autowired
+    private PasswordEncoder encoder;
 
     // OTP storage: email -> [otp, expiryTimestamp]
     private final ConcurrentHashMap<String, OtpEntry> otpStore = new ConcurrentHashMap<>();
@@ -62,7 +65,8 @@ public class UserService {
             System.err.println("Error: Cannot save user with empty password");
             return;
         }
-        user.setPassword(encoder.encode(user.getPassword()));
+        String pass = user.getPassword();
+        user.setPassword(encoder.encode(pass));
         userRepo.save(user);
         System.out.println("User saved successfully: " + user.getEmail());
     }
