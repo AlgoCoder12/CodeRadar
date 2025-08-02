@@ -6,20 +6,18 @@ import { useAuth } from "../contexts/AuthContext"
 import { useNavigate, useLocation } from "react-router-dom"
 import {
   Brain,
-  Code,
-  Clock,
-  Target,
-  ExternalLink,
-  Zap,
-  Trophy,
   Calendar,
+  Zap,
+  Star,
   Tag,
+  Clock,
   Loader2,
   AlertCircle,
-  Star,
-  TrendingUp,
+  Code,
+  ExternalLink,
   Users,
-  Award,
+  Trophy,
+  TrendingUp,
 } from "lucide-react"
 
 const platforms = ["LeetCode", "CodeForces"]
@@ -29,11 +27,13 @@ const platformInfo = {
     color: "from-orange-500 to-yellow-500",
     bgGradient: "from-orange-500/20 to-yellow-500/10",
     icon: "🟠",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/1/19/LeetCode_logo_black.png",
   },
   CodeForces: {
     color: "from-blue-500 to-cyan-500",
     bgGradient: "from-blue-500/20 to-cyan-500/10",
     icon: "🔵",
+    logo: "https://sta.codeforces.com/s/64388/images/codeforces-logo-with-telegram.png",
   },
 }
 
@@ -64,6 +64,7 @@ const POTDCard = ({ potd, index }) => {
     color: "from-gray-500 to-gray-600",
     bgGradient: "from-gray-500/20 to-gray-600/10",
     icon: "⚪",
+    logo: null,
   }
 
   const handleSolveClick = () => {
@@ -76,18 +77,25 @@ const POTDCard = ({ potd, index }) => {
 
   return (
     <div
-      className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/10 group"
+      className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/10 group relative"
       style={{
         opacity: 0,
         transform: "translateY(30px)",
         animation: `fadeInUp 0.8s ease-out ${index * 0.2}s forwards`,
       }}
     >
-      {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex-1">
           <div className="flex items-center space-x-3 mb-3">
-            <span className="text-2xl">{platform.icon}</span>
+            {potd.logo || platform.logo ? (
+              <img
+                src={potd.logo || platform.logo}
+                alt={`${potd.platform} logo`}
+                className="w-7 h-7 object-contain rounded"
+              />
+            ) : (
+              <span className="text-2xl">{platform.icon}</span>
+            )}
             <span className="text-sm font-medium text-purple-400">{potd.platform}</span>
             <div className={`px-3 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(potd.difficulty)}`}>
               {potd.difficulty || "Unknown"}
@@ -99,8 +107,7 @@ const POTDCard = ({ potd, index }) => {
         </div>
       </div>
 
-      {/* Tags */}
-      {potd.tags && potd.tags.length > 0 && (
+      {potd.tags?.length > 0 && (
         <div className="mb-6">
           <div className="flex items-center space-x-2 mb-3">
             <Tag className="h-4 w-4 text-cyan-400" />
@@ -119,7 +126,6 @@ const POTDCard = ({ potd, index }) => {
         </div>
       )}
 
-      {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         <div className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg border border-white/10">
           <Clock className="h-5 w-5 text-purple-400" />
@@ -128,16 +134,8 @@ const POTDCard = ({ potd, index }) => {
             <p className="text-sm font-semibold text-white">{getEstimatedTime(potd.points)}</p>
           </div>
         </div>
-        {/* <div className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg border border-white/10">
-          <Target className="h-5 w-5 text-cyan-400" />
-          <div>
-            <p className="text-xs text-gray-400">Points</p>
-            <p className="text-sm font-semibold text-white">{potd.points || "N/A"}</p>
-          </div>
-        </div> */}
       </div>
 
-      {/* Action Button */}
       <div className="flex justify-between items-center">
         <button
           onClick={handleSolveClick}
@@ -155,7 +153,6 @@ const POTDCard = ({ potd, index }) => {
         )}
       </div>
 
-      {/* Hover Effect Overlay */}
       <div
         className={`absolute inset-0 bg-gradient-to-r ${platform.bgGradient} rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none`}
       ></div>
@@ -173,9 +170,7 @@ const StatsCard = ({ icon: Icon, label, value, color }) => (
 
 export default function POTDPage() {
   const { user } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const [potds, setPotds] = useState(null) // null = loading
+  const [potds, setPotds] = useState(null)
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -194,63 +189,39 @@ export default function POTDPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-hidden">
-      {/* Animated Background */}
+      {/* Background Blobs */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -inset-10 opacity-20">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div
-            className="absolute top-3/4 right-1/4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"
-            style={{ animationDelay: "2s" }}
-          ></div>
-          <div
-            className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"
-            style={{ animationDelay: "4s" }}
-          ></div>
+          <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{ animationDelay: "2s" }}></div>
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{ animationDelay: "4s" }}></div>
         </div>
       </div>
 
+      {/* Content */}
       <div className="relative z-10 px-4 py-16">
-        {/* Hero Section */}
         <div className="max-w-6xl mx-auto text-center mb-16">
-          <div
-            className="mb-8"
-            style={{
-              opacity: 0,
-              transform: "translateY(30px)",
-              animation: "fadeInUp 1s ease-out forwards",
-            }}
-          >
+          <div className="mb-8" style={{ opacity: 0, transform: "translateY(30px)", animation: "fadeInUp 1s ease-out forwards" }}>
             <div className="inline-flex items-center bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-6 py-3 rounded-full text-sm font-medium backdrop-blur-sm mb-6">
               <Brain className="w-4 h-4 mr-2" />
               Problem of the Day
             </div>
-
             <h1 className="text-5xl sm:text-6xl font-black leading-tight tracking-tight mb-6">
-              <span className="bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent">
-                Daily Coding
-              </span>
+              <span className="bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent">Daily Coding</span>
               <br />
               <span className="text-4xl sm:text-5xl bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent flex items-center justify-center space-x-3">
                 <span>Challenge</span>
                 <Zap className="h-12 w-12 text-yellow-400" />
               </span>
             </h1>
-
             <p className="text-gray-300 max-w-3xl mx-auto text-lg sm:text-xl leading-relaxed">
               One challenge a day keeps the coding fear away. Stay consistent, sharpen your skills, and grow stronger
               with handpicked problems from top platforms.
             </p>
           </div>
 
-          {/* Stats Section */}
-          <div
-            className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16 max-w-4xl mx-auto"
-            style={{
-              opacity: 0,
-              transform: "translateY(40px)",
-              animation: "fadeInUp 0.8s ease-out 0.3s forwards",
-            }}
-          >
+          {/* Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16 max-w-4xl mx-auto" style={{ opacity: 0, transform: "translateY(40px)", animation: "fadeInUp 0.8s ease-out 0.3s forwards" }}>
             {stats.map((stat, index) => (
               <StatsCard key={index} {...stat} />
             ))}
@@ -260,7 +231,6 @@ export default function POTDPage() {
         {/* Problems Section */}
         <div className="max-w-5xl mx-auto">
           {potds === null ? (
-            /* Loading State */
             <div className="text-center py-16">
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-12">
                 <Loader2 className="w-16 h-16 text-purple-400 animate-spin mx-auto mb-4" />
@@ -269,7 +239,6 @@ export default function POTDPage() {
               </div>
             </div>
           ) : potds.length === 0 ? (
-            /* Empty State */
             <div className="text-center py-16">
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-12">
                 <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -278,16 +247,8 @@ export default function POTDPage() {
               </div>
             </div>
           ) : (
-            /* Problems Grid */
             <div className="space-y-8">
-              <div
-                className="text-center mb-12"
-                style={{
-                  opacity: 0,
-                  transform: "translateY(30px)",
-                  animation: "fadeInUp 0.8s ease-out 0.5s forwards",
-                }}
-              >
+              <div className="text-center mb-12" style={{ opacity: 0, transform: "translateY(30px)", animation: "fadeInUp 0.8s ease-out 0.5s forwards" }}>
                 <div className="flex items-center justify-center space-x-3 mb-4">
                   <Calendar className="h-6 w-6 text-purple-400" />
                   <h2 className="text-3xl font-black text-white">Today's Challenges</h2>
@@ -311,43 +272,9 @@ export default function POTDPage() {
             </div>
           )}
         </div>
-
-        {/* Motivation Section */}
-        {/* <div className="max-w-4xl mx-auto mt-16 text-center">
-          <div
-            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8"
-            style={{
-              opacity: 0,
-              transform: "translateY(30px)",
-              animation: "fadeInUp 0.8s ease-out 1s forwards",
-            }}
-          >
-            {/* <div className="flex items-center justify-center space-x-2 mb-4">
-              <Trophy className="h-6 w-6 text-yellow-400" />
-              <Award className="h-6 w-6 text-purple-400" />
-            </div> */}
-            {/* <h3 className="text-2xl font-bold text-white mb-4">Keep the Streak Alive!</h3>
-            <p className="text-gray-300 leading-relaxed">
-              Consistency is the key to mastering competitive programming. Each problem you solve today makes you
-              stronger tomorrow. Challenge yourself, learn from mistakes, and celebrate every small victory on your
-              coding journey.
-            </p> */}
-          {/* </div>
-        </div> */} 
       </div>
 
       <style jsx>{`
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 0.2;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.4;
-            transform: scale(1.1);
-          }
-        }
-
         @keyframes fadeInUp {
           from {
             opacity: 0;
