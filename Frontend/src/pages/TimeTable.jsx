@@ -1,269 +1,237 @@
-import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Clock, MapPin, User, Calendar, Bell, Loader2 } from "lucide-react";
-import { useAuth } from "../contexts/AuthContext";
-import { useUser } from "../contexts/UserContext";
-import FileUploader from "../components/FileUploader";
+"use client"
 
+import { useState } from "react"
+import { Loader2, Upload, FileText, X, Check, AlertCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
-export default function TimeTablePage() {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [table, setTable] = useState();
-  const [subjectMap, setSubjectMap] = useState({});
-  const [loading, setLoading] = useState(false);
+const FileUploader = ({ onFileUpload, onUpload, onCancel, selectedFile, loading }) => {
+  const [isDragOver, setIsDragOver] = useState(false)
 
-  const { token } = useAuth();
-  const { timeTable, getTimeTable, uploadTimeTable } = useUser();
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    setIsDragOver(true)
+  }
 
-  const handleFileUpload = (file) => {
-    setSelectedFile(file);
-  };
+  const handleDragLeave = (e) => {
+    e.preventDefault()
+    setIsDragOver(false)
+  }
 
-  const handleCancel = () => {
-    setSelectedFile(null);
-  };
-
-  const upload = async (file) => {
-    setLoading(true);
-    try {
-      const res = await uploadTimeTable(file);
-      if (res) {
-        // console.log("File uploaded successfully:", res);
-        await getTT(); // Refresh timetable after upload
-      } else {
-        console.error("Failed to upload file");
-      }
-    } finally {
-      setLoading(false);
+  const handleDrop = (e) => {
+    e.preventDefault()
+    setIsDragOver(false)
+    const files = e.dataTransfer.files
+    if (files.length > 0) {
+      onFileUpload(files[0])
     }
-  };
+  }
 
-  const processTableData = (data) => {
-    // Separate mapping entries (lecturer is null)
-    const mappingEntries = data.filter(item => item.lecturer === null);
-    const actualClasses = data.filter(item => item.lecturer !== null);
-
-    // Build subject code-to-name map
-    const map = {};
-    mappingEntries.forEach(item => {
-      // Example: "CS32102 = Object Oriented Programming (3L)"
-      const [code, name] = item.classTitle.split(" = ");
-      if (code && name) {
-        map[code.trim()] = name.trim();
-      }
-    });
-
-
-    // Replace subject code with name in actual classes
-    const processedClasses = actualClasses.map(item => {
-      // Extract code from classTitle (e.g., "CS32102(L)" -> "CS32102")
-      const codeMatch = item.classTitle.match(/^([A-Z0-9]+)\b/);
-      const code = codeMatch ? codeMatch[1] : item.classTitle;
-      const mappedName = map[code];
-      if (mappedName) {
-        // Preserve type suffix (e.g., "(L)", "(T)", "(P)")
-        const typeSuffixMatch = item.classTitle.match(/(\([LTP]\))/);
-        const typeSuffix = typeSuffixMatch ? typeSuffixMatch[1] : "";
-        return {
-          ...item,
-          classTitle: `${mappedName} ${typeSuffix}`.trim()
-        };
-      }
-      return item;
-    });
-
-    setSubjectMap(map);
-    setTable(processedClasses);
-  };
-
-
-  
-
-  // Update getTT to use processTableData
-  const getTT = async () => {
-    setLoading(true);
-    try {
-      const data = await getTimeTable();
-      processTableData(data);
-      // console.log(data);
-    } finally {
-      setLoading(false);
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      onFileUpload(file)
     }
-  };
+  }
 
-  useEffect(() => {
-    getTT();
-    // console.log(timeTable);
-  }, [token]);
+  const getFileIcon = (fileName) => {
+    const extension = fileName?.split(".").pop()?.toLowerCase()
+    switch (extension) {
+      case "pdf":
+        return "📄"
+      case "doc":
+      case "docx":
+        return "📝"
+      case "jpg":
+      case "jpeg":
+      case "png":
+        return "🖼️"
+      default:
+        return "📁"
+    }
+  }
 
-  const getClassType = (classTitle) => {
-    if (classTitle.includes('(L)')) return { type: 'Lecture', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' };
-    if (classTitle.includes('(T)')) return { type: 'Tutorial', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' };
-    if (classTitle.includes('(P)')) return { type: 'Practical', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' };
-    return { type: 'Class', color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' };
-  };
-
-  const groupByDay = (schedule) => {
-    const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
-    const grouped = {};
-    
-    days.forEach(day => {
-      grouped[day] = schedule.filter(item => item.day === day)
-        .sort((a, b) => new Date(a.start) - new Date(b.start));
-    });
-    
-    return grouped;
-  };
-
-  const groupedSchedule = table ? groupByDay(table) : {};
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return "0 Bytes"
+    const k = 1024
+    const sizes = ["Bytes", "KB", "MB", "GB"]
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 px-6 py-12">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">
-            📚 My Timetable
-          </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
-            Upload your timetable to get smart notifications for your lectures
-          </p>
-        </div>
-
-        {/* File Upload Section */}
-        <div className="max-w-2xl mx-auto mb-12">
-          <FileUploader
-            onFileUpload={handleFileUpload}
-            onUpload={upload}
-            onCancel={handleCancel}
-            selectedFile={selectedFile}
-            loading={loading}
+    <div className="w-full max-w-2xl mx-auto">
+      {/* Upload Area */}
+      <div
+        className={`relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 backdrop-blur-xl ${
+          isDragOver
+            ? "border-purple-500 bg-purple-500/10 scale-105"
+            : selectedFile
+              ? "border-green-500/50 bg-green-500/5"
+              : "border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/30"
+        } ${loading ? "pointer-events-none opacity-50" : "hover:scale-[1.02]"}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {/* Animated Background Effect */}
+        <div className="absolute inset-0 rounded-2xl overflow-hidden">
+          <div
+            className={`absolute inset-0 bg-gradient-to-r transition-opacity duration-300 ${
+              isDragOver
+                ? "from-purple-500/20 to-pink-500/20 opacity-100"
+                : selectedFile
+                  ? "from-green-500/10 to-emerald-500/10 opacity-100"
+                  : "opacity-0"
+            }`}
           />
-          
-          {selectedFile && (
-            <div className="mt-6 p-6 rounded-xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white flex items-center">
-                <Calendar className="mr-2 h-5 w-5" />
-                Uploaded File Info
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <span className="font-medium text-gray-700 dark:text-gray-300">Name:</span>
-                  <p className="text-gray-900 dark:text-white">{selectedFile.name}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700 dark:text-gray-300">Size:</span>
-                  <p className="text-gray-900 dark:text-white">{(selectedFile.size / 1024).toFixed(2)} KB</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700 dark:text-gray-300">Type:</span>
-                  <p className="text-gray-900 dark:text-white">{selectedFile.type}</p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Timetable Display */}
-        {table && table.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">
-              📅 Weekly Schedule
-            </h2>
-            
-            <div className="grid gap-6">
-              {Object.entries(groupedSchedule).map(([day, classes]) => (
-                classes.length > 0 && (
-                  <div key={day} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
-                      <h3 className="text-xl font-bold text-white">{day}</h3>
-                    </div>
-                    
-                    <div className="p-6">
-                      <div className="grid gap-4">
-                        {classes.map((classItem) => {
-                          const classType = getClassType(classItem.classTitle);
-                          return (
-                            <div key={classItem._id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-md transition-shadow">
-                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-3 mb-2">
-                                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                      {classItem.classTitle}
-                                    </h4>
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${classType.color}`}>
-                                      {classType.type}
-                                    </span>
-                                  </div>
-                                  
-                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                                    <div className="flex items-center text-gray-600 dark:text-gray-300">
-                                      <Clock className="mr-2 h-4 w-4" />
-                                      <span>{classItem.start} - {classItem.end}</span>
-                                    </div>
-                                    
-                                    <div className="flex items-center text-gray-600 dark:text-gray-300">
-                                      <MapPin className="mr-2 h-4 w-4" />
-                                      <span>{classItem.venue}</span>
-                                    </div>
-                                    
-                                    <div className="flex items-center text-gray-600 dark:text-gray-300">
-                                      <User className="mr-2 h-4 w-4" />
-                                      <span>{classItem.lecturer}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+        <input
+          type="file"
+          onChange={handleFileChange}
+          className="hidden"
+          id="file-upload"
+          accept=".pdf,.doc,.docx,.jpg,.png,.jpeg"
+          disabled={loading}
+        />
+
+        <label
+          htmlFor="file-upload"
+          className={`relative z-10 cursor-pointer block ${loading ? "pointer-events-none" : ""}`}
+        >
+          <div className="space-y-6">
+            {/* Icon Section */}
+            <div className="flex justify-center">
+              {loading ? (
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full blur-md opacity-30"></div>
+                  <div className="relative bg-white/10 backdrop-blur-sm rounded-full p-4 border border-white/20">
+                    <Loader2 className="h-12 w-12 text-purple-400 animate-spin" />
                   </div>
-                )
-              ))}
+                </div>
+              ) : selectedFile ? (
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full blur-md opacity-30"></div>
+                  <div className="relative bg-white/10 backdrop-blur-sm rounded-full p-4 border border-green-500/30">
+                    <Check className="h-12 w-12 text-green-400" />
+                  </div>
+                </div>
+              ) : isDragOver ? (
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur-md opacity-50"></div>
+                  <div className="relative bg-white/10 backdrop-blur-sm rounded-full p-4 border border-purple-500/30">
+                    <Upload className="h-12 w-12 text-purple-400" />
+                  </div>
+                </div>
+              ) : (
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full blur-md opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+                  <div className="relative bg-white/10 backdrop-blur-sm rounded-full p-4 border border-white/20 group-hover:border-purple-500/30 transition-all duration-300">
+                    <FileText className="h-12 w-12 text-gray-400 group-hover:text-purple-400 transition-colors duration-300" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Text Section */}
+            <div className="space-y-2">
+              {loading ? (
+                <>
+                  <p className="text-xl font-bold text-white">Processing your file...</p>
+                  <p className="text-gray-300">Please wait while we upload your timetable</p>
+                </>
+              ) : selectedFile ? (
+                <>
+                  <p className="text-xl font-bold text-green-400">File Ready to Upload!</p>
+                  <p className="text-gray-300">Click upload to process your timetable</p>
+                </>
+              ) : isDragOver ? (
+                <>
+                  <p className="text-xl font-bold text-purple-400">Drop it like it's hot! 🔥</p>
+                  <p className="text-gray-300">Release to select your timetable file</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-xl font-bold text-white">Drop your timetable here</p>
+                  <p className="text-gray-300">or click to browse files</p>
+                </>
+              )}
+            </div>
+
+            {/* Supported Formats */}
+            <div className="flex justify-center space-x-4 text-xs text-gray-400">
+              <span className="px-3 py-1 bg-white/10 rounded-full border border-white/20">PDF</span>
+              <span className="px-3 py-1 bg-white/10 rounded-full border border-white/20">DOC</span>
+              <span className="px-3 py-1 bg-white/10 rounded-full border border-white/20">DOCX</span>
+              <span className="px-3 py-1 bg-white/10 rounded-full border border-white/20">Images</span>
             </div>
           </div>
-        )}
+        </label>
+      </div>
 
-        {/* Action Button */}
-        <div className="flex justify-center">
-          <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-4 px-8 text-lg font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Get Smart Notifications 🔔
-          </Button>
+      {/* Selected File Info */}
+      {selectedFile && !loading && (
+        <div className="mt-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <span className="text-2xl">{getFileIcon(selectedFile.name)}</span>
+              <div>
+                <p className="font-semibold text-white truncate max-w-xs">{selectedFile.name}</p>
+                <p className="text-sm text-gray-400">{formatFileSize(selectedFile.size)}</p>
+              </div>
+            </div>
+            <button
+              onClick={onCancel}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors duration-300 text-gray-400 hover:text-white"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <Button
+              onClick={() => onUpload(selectedFile)}
+              className="flex-1 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 hover:from-purple-700 hover:via-pink-700 hover:to-cyan-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2"
+              disabled={loading}
+            >
+              <Upload className="h-5 w-5" />
+              <span>Upload Timetable</span>
+            </Button>
+            <Button
+              onClick={onCancel}
+              variant="outline"
+              className="px-6 py-3 bg-white/10 border border-white/20 text-white hover:bg-white/20 hover:border-white/30 font-semibold rounded-lg transition-all duration-300"
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+          </div>
         </div>
+      )}
 
-        {/* Stats Summary */}
-        {table && table.length > 0 && (
-          <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center shadow-md border border-gray-200 dark:border-gray-700">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{table.length}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">Total Classes</div>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center shadow-md border border-gray-200 dark:border-gray-700">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {table.filter(c => c.classTitle.includes('(L)')).length}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">Lectures</div>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center shadow-md border border-gray-200 dark:border-gray-700">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {table.filter(c => c.classTitle.includes('(T)')).length}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">Tutorials</div>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center shadow-md border border-gray-200 dark:border-gray-700">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                {table.filter(c => c.classTitle.includes('(P)')).length}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">Practicals</div>
-            </div>
+      {/* Loading State */}
+      {loading && (
+        <div className="mt-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
+          <div className="flex items-center justify-center space-x-3">
+            <Loader2 className="h-6 w-6 text-purple-400 animate-spin" />
+            <span className="text-white font-medium">Processing your timetable...</span>
           </div>
-        )}
+          <div className="mt-4 bg-white/10 rounded-full h-2 overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+      )}
+
+      {/* Help Text */}
+      <div className="mt-6 text-center">
+        <div className="inline-flex items-center space-x-2 text-sm text-gray-400">
+          <AlertCircle className="h-4 w-4" />
+          <span>Supported formats: PDF, DOC, DOCX, JPG, PNG (Max 10MB)</span>
+        </div>
       </div>
     </div>
-  );
+  )
 }
+
+export default FileUploader
