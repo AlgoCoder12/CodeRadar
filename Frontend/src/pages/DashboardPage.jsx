@@ -48,6 +48,8 @@ export default function DashboardPage({ user }) {
     fetchContests();
   }, []);
 
+  console.log("All Contests:", allContests);
+
   const platforms = ["All", ...new Set(allContests.map(c => c.platform))];
 
   const filteredContests = allContests.filter(c => {

@@ -147,6 +147,12 @@
 			<scope>runtime</scope>
 		</dependency>
 
+<!--		Twillo-->
+		<dependency>
+			<groupId>com.twilio.sdk</groupId>
+			<artifactId>twilio</artifactId>
+			<version>10.9.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>
