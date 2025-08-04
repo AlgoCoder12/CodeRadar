@@ -6,19 +6,19 @@ export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   const footerLinks = {
-    product: [
+    Product: [
       { name: "Contest Info", href: "/contestinfo" },
       { name: "Problem of the Day", href: "/potd" },
       { name: "Time Table", href: "/timetable" },
       { name: "Dashboard", href: "/dashboard" },
     ],
-    company: [
+    Company: [
       { name: "About Us", href: "/about" },
       { name: "Contact", href: "/contact" },
       { name: "Privacy Policy", href: "/privacy" },
       { name: "Terms of Service", href: "/terms" },
     ],
-    resources: [
+    Resources: [
       { name: "Documentation", href: "/docs" },
       { name: "API Reference", href: "/api" },
       { name: "Community", href: "/community" },
@@ -34,135 +34,116 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="relative z-10 border-t border-white/10 bg-gradient-to-r from-slate-900/80 via-purple-900/80 to-slate-900/80 backdrop-blur-xl">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
-          {/* Brand Section */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center space-x-3 mb-4">
-              <img src="/LOGO.png.png" alt="CodeRadar Logo" className="h-10 w-auto" />
-              <span className="tracking-wide uppercase text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 font-mono font-bold text-xl">
+    <footer className="relative bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 border-t border-white/10 overflow-hidden">
+      {/* Background floating blur circles */}
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-purple-500/20 blur-3xl rounded-full animate-float-slow" />
+      <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-pink-500/20 blur-2xl rounded-full animate-pulse-slow" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-20">
+        {/* BOX STRUCTURE */}
+        <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-10 md:p-14">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center space-x-3 mb-4">
+              <img src="/LOGO.png.png" alt="Logo" className="h-10 w-10 rounded-full" />
+              <h2 className="text-3xl font-extrabold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 text-transparent bg-clip-text tracking-wide">
                 Code Radar
-              </span>
+              </h2>
             </div>
-            <p className="text-gray-300 text-sm leading-relaxed mb-6 max-w-md">
-              Your complete coding companion. Track contests, solve daily problems, and manage your academic schedule
-              all in one place. Master competitive programming while staying organized.
+            <p className="text-gray-300 max-w-2xl mx-auto text-sm font-light">
+              One stop for all your coding needs – contests, problem practice, and academic planning.
             </p>
+          </div>
 
-            {/* Social Links */}
-            <div className="flex space-x-4">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.name}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all duration-300 hover:scale-110"
-                  aria-label={social.name}
-                >
-                  <social.icon className="h-5 w-5" />
-                </a>
-              ))}
+          {/* Links Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 text-center md:text-left mb-12">
+            {Object.entries(footerLinks).map(([title, links]) => (
+              <div key={title}>
+                <h4 className="text-white font-semibold text-lg mb-4 relative">
+                  {title}
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full mt-1" />
+                </h4>
+                <ul className="space-y-2">
+                  {links.map(({ name, href }) => (
+                    <li key={name}>
+                      <Link
+                        to={href}
+                        className="text-gray-400 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"
+                      >
+                        {name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          {/* Social Icons */}
+          <div className="flex justify-center space-x-6 mb-10">
+            {socialLinks.map(({ name, icon: Icon, href }) => (
+              <a
+                key={name}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-all duration-300 hover:scale-110 shadow-sm"
+                aria-label={name}
+              >
+                <Icon className="h-5 w-5" />
+              </a>
+            ))}
+          </div>
+
+          {/* Bottom Row */}
+          <div className="border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between text-gray-400 text-sm">
+            <div className="flex items-center space-x-1 mb-4 md:mb-0">
+              <span>© {currentYear} CodeRadar. Made with</span>
+              <Heart className="h-4 w-4 text-red-500 fill-current mx-1" />
+              <span>for coders worldwide.</span>
             </div>
-          </div>
-
-          {/* Product Links */}
-          <div>
-            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Product</h3>
-            <ul className="space-y-3">
-              {footerLinks.product.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:translate-x-1 inline-block"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Company Links */}
-          <div>
-            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Company</h3>
-            <ul className="space-y-3">
-              {footerLinks.company.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:translate-x-1 inline-block"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Resources Links */}
-          <div>
-            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Resources</h3>
-            <ul className="space-y-3">
-              {footerLinks.resources.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:translate-x-1 inline-block"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Newsletter Signup */}
-        {/* <div className="border-t border-white/10 pt-8 mb-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="text-center md:text-left">
-              <h3 className="text-white font-semibold mb-2">Stay Updated</h3>
-              <p className="text-gray-400 text-sm">
-                Get the latest contest updates and coding tips delivered to your inbox.
-              </p>
+            <div className="flex space-x-6">
+              <Link to="/privacy" className="hover:text-white transition">
+                Privacy
+              </Link>
+              <Link to="/terms" className="hover:text-white transition">
+                Terms
+              </Link>
+              <Link to="/cookies" className="hover:text-white transition">
+                Cookies
+              </Link>
             </div>
-            <div className="flex w-full md:w-auto max-w-md">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-l-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-              <button className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium rounded-r-lg transition-all duration-300 hover:scale-105">
-                Subscribe
-              </button>
-            </div>
-          </div>
-        </div> */}
-
-        {/* Bottom Bar */}
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center space-x-1 text-gray-400 text-sm">
-            <span>© {currentYear} CodeRadar. Made with</span>
-            <Heart className="h-4 w-4 text-red-500 fill-current" />
-            <span>for developers worldwide.</span>
-          </div>
-
-          <div className="flex items-center space-x-6 text-sm">
-            <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors duration-300">
-              Privacy
-            </Link>
-            <Link to="/terms" className="text-gray-400 hover:text-white transition-colors duration-300">
-              Terms
-            </Link>
-            <Link to="/cookies" className="text-gray-400 hover:text-white transition-colors duration-300">
-              Cookies
-            </Link>
           </div>
         </div>
       </div>
+
+      {/* Custom Animations */}
+      <style jsx>{`
+        @keyframes float-slow {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-20px);
+          }
+        }
+        @keyframes pulse-slow {
+          0%, 100% {
+            opacity: 0.15;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.25;
+            transform: scale(1.1);
+          }
+        }
+        .animate-float-slow {
+          animation: float-slow 16s ease-in-out infinite;
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 12s ease-in-out infinite;
+        }
+      `}</style>
     </footer>
   )
 }
