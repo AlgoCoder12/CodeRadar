@@ -97,7 +97,6 @@ public class ContestFetcherService {
                 "111", // CS Academy
                 "12",  // TopCoder
                 "136", // Naukri.com/Code360
-//                "81"   // CodinGame
         };
 
         for (String platformId : platformIds) {
