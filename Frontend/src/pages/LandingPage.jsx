@@ -4,148 +4,336 @@ import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
 import { useAuth } from "../contexts/AuthContext"
+import {
+  Code2,
+  Trophy,
+  Calendar,
+  ArrowRight,
+  ChevronDown,
+  ChevronUp,
+  Zap,
+  Target,
+  Users,
+  TrendingUp,
+  Clock,
+  Star,
+  Github,
+  Sparkles,
+  Play,
+  CheckCircle,
+  Rocket,
+  Brain,
+  Shield,
+  Globe,
+  Award,
+  BookOpen,
+  Coffee,
+} from "lucide-react"
+
+function ParticleSystem() {
+  const canvasRef = useRef(null)
+  const animationRef = useRef(null)
+  const particlesRef = useRef([])
+  const mouseRef = useRef({ x: 0, y: 0 })
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext("2d")
+    const particles = particlesRef.current
+
+    // Set canvas size
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+    resizeCanvas()
+    window.addEventListener("resize", resizeCanvas)
+
+    // Create particles
+    const createParticles = () => {
+      particles.length = 0
+      const particleCount = Math.min(80, Math.floor((canvas.width * canvas.height) / 15000))
+
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 0.5,
+          vy: (Math.random() - 0.5) * 0.5,
+          size: Math.random() * 2 + 1,
+          opacity: Math.random() * 0.5 + 0.2,
+          hue: Math.random() * 60 + 200, // Blue to purple range
+        })
+      }
+    }
+    createParticles()
+
+    // Mouse tracking
+    const handleMouseMove = (e) => {
+      mouseRef.current = { x: e.clientX, y: e.clientY }
+    }
+    window.addEventListener("mousemove", handleMouseMove)
+
+    // Animation loop
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      // Update and draw particles
+      particles.forEach((particle, i) => {
+        // Update position
+        particle.x += particle.vx
+        particle.y += particle.vy
+
+        // Bounce off edges
+        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1
+        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1
+
+        // Mouse interaction
+        const dx = mouseRef.current.x - particle.x
+        const dy = mouseRef.current.y - particle.y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+
+        if (distance < 150) {
+          const force = (150 - distance) / 150
+          particle.x -= dx * force * 0.01
+          particle.y -= dy * force * 0.01
+        }
+
+        // Draw particle
+        ctx.beginPath()
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2)
+        ctx.fillStyle = `hsla(${particle.hue}, 70%, 60%, ${particle.opacity})`
+        ctx.fill()
+
+        // Draw connections
+        particles.slice(i + 1).forEach((otherParticle) => {
+          const dx = particle.x - otherParticle.x
+          const dy = particle.y - otherParticle.y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+
+          if (distance < 120) {
+            const opacity = ((120 - distance) / 120) * 0.3
+            ctx.beginPath()
+            ctx.moveTo(particle.x, particle.y)
+            ctx.lineTo(otherParticle.x, otherParticle.y)
+            ctx.strokeStyle = `hsla(${(particle.hue + otherParticle.hue) / 2}, 70%, 60%, ${opacity})`
+            ctx.lineWidth = 0.5
+            ctx.stroke()
+          }
+        })
+      })
+
+      animationRef.current = requestAnimationFrame(animate)
+    }
+    animate()
+
+    return () => {
+      window.removeEventListener("resize", resizeCanvas)
+      window.removeEventListener("mousemove", handleMouseMove)
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+    }
+  }, [])
+
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" style={{ zIndex: 1 }} />
+}
+
+function GlowingOrbs() {
+  return (
+    <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 2 }}>
+      {/* Large glowing orbs */}
+      <div className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-3xl animate-pulse-slow"></div>
+      <div className="absolute top-40 right-20 w-48 h-48 bg-gradient-to-r from-purple-500/15 to-pink-500/15 rounded-full blur-3xl animate-float-slow"></div>
+      <div
+        className="absolute bottom-40 left-20 w-56 h-56 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-3xl animate-pulse-slow"
+        style={{ animationDelay: "2s" }}
+      ></div>
+      <div
+        className="absolute bottom-20 right-40 w-40 h-40 bg-gradient-to-r from-green-500/15 to-emerald-500/15 rounded-full blur-3xl animate-float-slow"
+        style={{ animationDelay: "1s" }}
+      ></div>
+      <div
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-full blur-3xl animate-pulse-slow"
+        style={{ animationDelay: "3s" }}
+      ></div>
+    </div>
+  )
+}
 
 function FAQItem({ question, answer, index }) {
   const [open, setOpen] = useState(false)
 
   return (
     <div
-      className="mb-4 group"
+      className="group bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-xl overflow-hidden hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300"
       style={{
         opacity: 0,
-        transform: "translateX(-20px)",
-        animation: `fadeInLeft 0.6s ease-out forwards`,
+        transform: "translateY(20px)",
+        animation: `fadeInUp 0.6s ease-out forwards`,
         animationDelay: `${index * 0.1}s`,
       }}
     >
-      <div className="bg-gradient-to-r from-white/5 to-transparent backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden hover:from-white/10 hover:to-white/5 transition-all duration-300">
-        <button
-          onClick={() => setOpen(!open)}
-          className="w-full text-left px-6 py-5 font-medium text-lg focus:outline-none flex justify-between items-center text-white hover:transform hover:translateX-1 transition-all duration-300"
-        >
-          <span className="pr-4">{question}</span>
-          <span
-            className="text-purple-400 transition-transform duration-300 flex-shrink-0"
-            style={{ transform: open ? "rotate(45deg)" : "rotate(0deg)" }}
-          >
-            {open ? "−" : "+"}
-          </span>
-        </button>
-        <div className="overflow-hidden transition-all duration-300" style={{ maxHeight: open ? "200px" : "0" }}>
-          <div className="px-6 pb-5 text-gray-300 leading-relaxed border-t border-white/10 pt-4">{answer}</div>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full text-left px-6 py-5 focus:outline-none flex justify-between items-center text-slate-200 hover:bg-slate-800/40 transition-all duration-200 focus:bg-slate-800/60 group-hover:text-white"
+      >
+        <span className="font-medium pr-4 text-lg">{question}</span>
+        <div className="flex-shrink-0 text-blue-400 group-hover:text-blue-300 transition-colors duration-200">
+          {open ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+        </div>
+      </button>
+      <div className="overflow-hidden transition-all duration-300 ease-out" style={{ maxHeight: open ? "300px" : "0" }}>
+        <div className="px-6 pb-5 text-slate-400 leading-relaxed border-t border-slate-700/30 pt-4 bg-slate-800/20">
+          {answer}
         </div>
       </div>
     </div>
   )
 }
 
+function FeatureCard({ icon: Icon, title, description, details, link, index }) {
+  const { user } = useAuth()
+
+  return (
+    <div
+      className="group relative bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 hover:border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden"
+      style={{
+        opacity: 0,
+        transform: "translateY(30px)",
+        animation: `fadeInUp 0.8s ease-out forwards`,
+        animationDelay: `${index * 0.2}s`,
+      }}
+    >
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+      <div className="relative z-10">
+        <div className="flex items-start space-x-4 mb-6">
+          <div className="flex-shrink-0 p-4 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl group-hover:from-blue-500/30 group-hover:to-purple-500/30 transition-all duration-300 group-hover:scale-110">
+            <Icon className="h-8 w-8 text-blue-400 group-hover:text-blue-300 transition-colors duration-300" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-2xl font-bold text-slate-100 mb-3 group-hover:text-white transition-colors duration-300">
+              {title}
+            </h3>
+            <p className="text-slate-300 leading-relaxed mb-4 text-lg">{description}</p>
+            <p className="text-slate-400 text-sm leading-relaxed">{details}</p>
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center">
+          <Link to={user ? link : "/login"}>
+            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg">
+              <span className="mr-2">Explore</span>
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
 export default function LandingPage() {
   const { user } = useAuth()
-  const observerRef = useRef(null)
-
-  useEffect(() => {
-    // Remove default margins and ensure full screen coverage
-    document.body.style.margin = "0"
-    document.body.style.padding = "0"
-    document.documentElement.style.margin = "0"
-    document.documentElement.style.padding = "0"
-    // Remove the overflow hidden that was causing issues
-
-    return () => {
-      // Cleanup on unmount - no need to restore overflow
-    }
-  }, [])
-
-  useEffect(() => {
-    // Initialize intersection observer for animations
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: "0px 0px -50px 0px",
-    }
-
-    observerRef.current = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = "1"
-          entry.target.style.transform = "translateY(0)"
-        }
-      })
-    }, observerOptions)
-
-    // Observe elements for scroll animations
-    const elementsToObserve = document.querySelectorAll(".feature-card, .stat-card")
-    elementsToObserve.forEach((el) => {
-      el.style.opacity = "0"
-      el.style.transform = "translateY(30px)"
-      el.style.transition = "opacity 0.6s ease, transform 0.6s ease"
-      observerRef.current.observe(el)
-    })
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect()
-      }
-    }
-  }, [])
 
   const mainFeatures = [
     {
-      emoji: "🏆",
+      icon: Trophy,
       title: "Contest Information Hub",
-      description: "Get real-time updates on contests from all major coding platforms",
+      description: "Real-time updates from 20+ coding platforms",
       details:
-        "Track contests from LeetCode, Codeforces, CodeChef, HackerRank, AtCoder, and 15+ more platforms in one unified dashboard.",
-      gradient: "from-amber-500/20 via-orange-500/10 to-transparent",
-      link:"/contestinfo"
+        "Track contests from LeetCode, Codeforces, CodeChef, HackerRank, AtCoder, and more. Get notifications, filter by platform, and never miss an important contest.",
+      link: "/contestinfo",
     },
     {
-      emoji: "🧠",
+      icon: Code2,
       title: "Problem of the Day",
-      description: "Daily curated problems to sharpen your algorithmic thinking",
+      description: "Daily curated problems to build consistency",
       details:
-        "Handpicked DSA problems with varying difficulty levels, complete with editorial solutions and community discussions.",
-      gradient: "from-purple-500/20 via-pink-500/10 to-transparent",
-       link:"/potd"
+        "Handpicked DSA problems with varying difficulty levels. Build a daily coding habit with problems that match your skill level and learning goals.",
+      link: "/potd",
     },
     {
-      emoji: "🎓",
-      title: "Semester Class Schedule",
-      description: "Organize your academic schedule alongside coding practice",
+      icon: Calendar,
+      title: "Academic Schedule Manager",
+      description: "Balance coding practice with your studies",
       details:
-        "Sync your university timetable, assignment deadlines, and exam schedules with your coding practice routine.",
-      gradient: "from-blue-500/20 via-cyan-500/10 to-transparent",
-       link:"/timetable"
+        "Organize your university timetable, assignment deadlines, and exam schedules. Plan your coding practice around your academic commitments.",
+      link: "/timetable",
     },
   ]
 
   const additionalFeatures = [
-    { emoji: "⏰", title: "Smart Notifications", desc: "Never miss important contests " },
-    { emoji: "📊", title: "Progress Analytics", desc: "Track your improvement with detailed insights" },
-   // { emoji: "👥", title: "Community Features", desc: "Connect with fellow competitive programmers" },
-    { emoji: "🎯", title: "Goal Setting", desc: "Set and achieve your coding milestones" },
-   // { emoji: "📚", title: "Resource Library", desc: "Access curated learning materials and tutorials" },
-   // { emoji: "🏅", title: "Achievement System", desc: "Earn badges and celebrate your progress" },
+    {
+      icon: Clock,
+      title: "Smart Notifications",
+      description: "Never miss important contests or deadlines",
+      color: "from-blue-500/20 to-cyan-500/20",
+    },
+    {
+      icon: TrendingUp,
+      title: "Progress Analytics",
+      description: "Track your improvement with detailed insights",
+      color: "from-purple-500/20 to-pink-500/20",
+    },
+    {
+      icon: Target,
+      title: "Goal Setting",
+      description: "Set and achieve your coding milestones",
+      color: "from-green-500/20 to-emerald-500/20",
+    },
   ]
 
-  // const stats = [
-  //   { number: "20+", label: "Coding Platforms" },
-  //   { number: "50K+", label: "Daily Problems" },
-  //   { number: "15K+", label: "Active Users" },
-  //   { number: "100+", label: "Universities" },
-  // ]
+  const stats = [
+    {
+      icon: Code2,
+      label: "Platforms",
+      value: "20+",
+      description: "Coding platforms integrated",
+      color: "from-blue-500/20 to-purple-500/20",
+      delay: 0.1,
+    },
+    {
+      icon: Users,
+      label: "Active Users",
+      value: "15K+",
+      description: "Developers using CodeRadar",
+      color: "from-purple-500/20 to-pink-500/20",
+      delay: 0.2,
+    },
+    {
+      icon: Trophy,
+      label: "Contests",
+      value: "500+",
+      description: "Contests tracked monthly",
+      color: "from-green-500/20 to-emerald-500/20",
+      delay: 0.3,
+    },
+    {
+      icon: Star,
+      label: "Success Rate",
+      value: "95%",
+      description: "User satisfaction rating",
+      color: "from-yellow-500/20 to-orange-500/20",
+      delay: 0.4,
+    },
+  ]
 
   const faqData = [
     {
       q: "What makes CodeRadar different from other coding platforms?",
-      a: "CodeRadar is not a coding platform itself, but a comprehensive hub that aggregates information from all major coding platforms. We also integrate academic scheduling to help students balance their studies with competitive programming.",
+      a: "CodeRadar is a comprehensive hub that aggregates information from all major coding platforms while integrating academic scheduling to help students balance studies with competitive programming.",
     },
     {
       q: "How does the contest tracking work?",
-      a: "We continuously monitor 20+ coding platforms using their APIs and web scraping to provide real-time contest updates. You'll get notifications before contests start and can filter by your preferred platforms.",
+      a: "We continuously monitor 20+ coding platforms using APIs and web scraping to provide real-time contest updates. You'll get notifications before contests start and can filter by your preferred platforms.",
     },
     {
       q: "Can I sync my university schedule?",
-      a: "Yes! You can manually add your class schedules, assignment deadlines, and exam dates. Our smart calendar will help you plan your coding practice around your academic commitments.",
+      a: "Yes! You can manually add your class schedules, assignment deadlines, and exam dates. Our smart calendar helps you plan coding practice around academic commitments.",
     },
     {
       q: "Is the Problem of the Day feature free?",
@@ -153,257 +341,206 @@ export default function LandingPage() {
     },
     {
       q: "Do you support mobile notifications?",
-      a: "Yes, we offer push notifications for contest reminders, new POTD problems.",
+      a: "Yes, we offer push notifications for contest reminders and new POTD problems through our web app.",
     },
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-x-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -inset-10 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div
-            className="absolute top-3/4 right-1/4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"
-            style={{ animationDelay: "2s" }}
-          ></div>
-          <div
-            className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"
-            style={{ animationDelay: "4s" }}
-          ></div>
-        </div>
+    <div className="min-h-screen bg-slate-900 text-slate-100 overflow-hidden relative">
+      {/* New Interactive Particle System Background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        {/* Particle system canvas */}
+        <ParticleSystem />
+
+        {/* Glowing orbs */}
+        <GlowingOrbs />
+
+        {/* Subtle gradient overlay */}
+        <div
+          className="absolute inset-0 bg-gradient-to-t from-slate-900/30 via-transparent to-slate-900/20"
+          style={{ zIndex: 3 }}
+        ></div>
       </div>
 
-      <div className="relative z-10 px-4 py-16">
+      <div className="relative z-10">
         {/* Hero Section */}
-        <div className="max-w-7xl mx-auto">
-          <div
-            className="text-center mb-20"
-            style={{
-              opacity: 0,
-              transform: "translateY(30px)",
-              animation: "fadeInUp 1s ease-out forwards",
-            }}
-          >
-            <div className="mb-8 inline-flex items-center bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-6 py-3 rounded-full text-base font-medium backdrop-blur-sm">
-              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Your Complete Coding Companion
-            </div>
-
-            <h1 className="text-6xl sm:text-8xl font-black leading-tight tracking-tight mb-8">
-              <span className="bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent">
-                CodeRadar
-              </span>
-              <br />
-              <span className="text-4xl sm:text-5xl bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-                Everything Coding, Unified
-              </span>
-            </h1>
-
-            <p className="text-gray-300 max-w-3xl mx-auto text-xl sm:text-2xl mb-12 leading-relaxed">
-              The ultimate platform that brings together contest tracking, daily practice problems, and academic
-              scheduling. Master competitive programming while staying on top of your studies.
-            </p>
-
-            <Link to={user ? "/contestinfo" : "/login"}>
-              <Button className="bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 hover:from-purple-700 hover:via-pink-700 hover:to-cyan-700 text-white px-12 py-6 text-xl font-bold rounded-full shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 group">
-                Start Your Journey
-                <svg
-                  className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
-              </Button>
-            </Link>
-          </div>
-
-          {/* Stats Section - Horizontal Layout */}
-          {/* <div
-            className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-32 max-w-5xl mx-auto"
-            style={{
-              opacity: 0,
-              transform: "translateY(40px)",
-              animation: "fadeInUp 0.8s ease-out 0.3s forwards",
-            }}
-          >
-            {stats.map((stat, index) => (
-              <div
-                key={stat.label}
-                className="stat-card bg-gradient-to-br from-white/10 to-white/5 border-0 backdrop-blur-sm hover:from-white/20 hover:to-white/10 transition-all duration-300 rounded-xl p-8 text-center group hover:scale-105 hover:-translate-y-2"
-                style={{
-                  opacity: 0,
-                  transform: "scale(0.8)",
-                  animation: `scaleIn 0.6s ease-out ${index * 0.1}s forwards`,
-                }}
-              >
-                <div className="text-4xl font-black text-white mb-2">{stat.number}</div>
-                <div className="text-gray-400 font-medium">{stat.label}</div>
+        <section className="px-4 py-20 lg:py-32">
+          <div className="max-w-7xl mx-auto text-center">
+            <div
+              className="mb-12"
+              style={{
+                opacity: 0,
+                transform: "translateY(30px)",
+                animation: "fadeInUp 1s ease-out forwards",
+              }}
+            >
+              <div className="inline-flex items-center bg-slate-800/50 backdrop-blur-md border border-blue-500/30 text-blue-300 px-6 py-3 rounded-full text-sm font-medium mb-8 hover:bg-slate-800/70 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20">
+                <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
+                Your Complete Coding Companion
+                <Zap className="w-4 h-4 ml-2" />
               </div>
-            ))}
-          </div> */}
-        </div>
 
-        {/* Main Features Section - Vertical Layout */}
-        <section className="max-w-7xl mx-auto mb-32">
-          <div
-            className="text-center mb-20"
-            style={{
-              opacity: 0,
-              transform: "translateY(40px)",
-              animation: "fadeInUp 0.8s ease-out forwards",
-            }}
-          >
-            <h2 className="text-5xl sm:text-6xl font-black mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-              Three Pillars of Success
-            </h2>
-            <p className="text-gray-400 text-xl max-w-3xl mx-auto leading-relaxed">
-              CodeRadar combines the essential tools every serious programmer needs in one seamless experience
-            </p>
-          </div>
+              <h1 className="text-6xl lg:text-8xl font-black leading-tight mb-8">
+                <span className="bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent drop-shadow-2xl">
+                  CodeRadar
+                </span>
+                <br />
+                <span className="text-3xl lg:text-5xl bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent font-normal flex items-center justify-center gap-4 mt-4">
+                  <Coffee className="w-12 h-12 text-blue-400 drop-shadow-lg" />
+                  Everything Coding, Unified
+                  <Rocket className="w-12 h-12 text-purple-400 drop-shadow-lg" />
+                </span>
+              </h1>
 
-          <div className="space-y-20">
-            {mainFeatures.map((feature, index) => (
-              <div
-                key={feature.title}
-                className={`flex flex-col ${index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"} items-center gap-12`}
-                style={{
-                  opacity: 0,
-                  transform: index % 2 === 0 ? "translateX(-60px)" : "translateX(60px)",
-                  animation: `${index % 2 === 0 ? "fadeInLeft" : "fadeInRight"} 0.8s ease-out ${index * 0.2}s forwards`,
-                }}
-              >
-                <div className="flex-1 space-y-6">
-                  <div className="text-6xl mb-4">{feature.emoji}</div>
-                  <h3 className="text-4xl font-black text-white">{feature.title}</h3>
-                  <p className="text-xl text-gray-300 leading-relaxed">{feature.description}</p>
-                  <p className="text-gray-400 leading-relaxed">{feature.details}</p>
-                 
-                  <Link to={user ? feature.link : "/login"}>
-                  <Button 
-                    variant="outline"
-                    className="border-purple-500/50 text-purple-300 hover:bg-purple-500/20 hover:border-purple-400 bg-transparent"
+              <p className="text-xl lg:text-2xl text-slate-300 max-w-4xl mx-auto mb-12 leading-relaxed drop-shadow-sm">
+                The ultimate platform that brings together contest tracking, daily practice problems, and academic
+                scheduling. Master competitive programming while staying organized.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                <Link to={user ? "/contestinfo" : "/login"}>
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-10 py-4 rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 group relative overflow-hidden"
                   >
-                    Learn More
-                    <svg className="w-4 h-4 ml-2" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M9 18l6-6-6-6" />
-                    </svg>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <Rocket className="w-5 h-5 mr-2 group-hover:animate-bounce relative z-10" />
+                    <span className="relative z-10">Get Started</span>
+                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300 relative z-10" />
                   </Button>
-                  </Link>
-                </div>
-                <div className="flex-1">
-                  <div
-                    className={`bg-gradient-to-br ${feature.gradient} border-0 backdrop-blur-sm h-80 rounded-xl flex items-center justify-center`}
-                  >
-                    <div className="text-center space-y-4">
-                      <div className="text-8xl">{feature.emoji}</div>
-                      <div className="text-2xl font-bold text-white">{feature.title}</div>
-                      {/* <div className="text-gray-300">Interactive Preview Coming Soon</div> */}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Additional Features - Horizontal Grid */}
-        <section className="max-w-7xl mx-auto mb-32">
-          <div
-            className="text-center mb-16"
-            style={{
-              opacity: 0,
-              transform: "translateY(40px)",
-              animation: "fadeInUp 0.8s ease-out forwards",
-            }}
-          >
-            <h2 className="text-4xl sm:text-5xl font-black mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-              Powerful Features
-            </h2>
-            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Everything you need to excel in competitive programming 
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {additionalFeatures.map((feature, index) => (
-              <div
-                key={feature.title}
-                className="feature-card h-full bg-white/5 border-0 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10 rounded-xl p-8 text-center group hover:-translate-y-3 hover:scale-105"
-                style={{
-                  opacity: 0,
-                  transform: "translateY(40px)",
-                  animation: `fadeInUp 0.6s ease-out ${index * 0.1}s forwards`,
-                }}
-              >
-                <div className="text-4xl mb-6">{feature.emoji}</div>
-                <h3 className="text-xl font-bold mb-3 text-white group-hover:text-purple-200 transition-colors">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-400 leading-relaxed">{feature.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* FAQ Section - New Modern Style */}
-        <section className="max-w-4xl mx-auto mb-32">
-          <div
-            className="text-center mb-16"
-            style={{
-              opacity: 0,
-              transform: "translateY(40px)",
-              animation: "fadeInUp 0.8s ease-out forwards",
-            }}
-          >
-            <h2 className="text-4xl sm:text-5xl font-black mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-              Got Questions?
-            </h2>
-            <p className="text-gray-400 text-lg">We've got answers to help you get started</p>
-          </div>
-
-          <div className="space-y-4">
-            {faqData.map((faq, index) => (
-              <FAQItem key={index} question={faq.q} answer={faq.a} index={index} />
-            ))}
-          </div>
-        </section>
-
-        {/* Final CTA Section */}
-        <section className="max-w-5xl mx-auto text-center">
-          <div
-            className="bg-gradient-to-r from-purple-900/50 via-pink-900/30 to-cyan-900/50 border-0 backdrop-blur-sm overflow-hidden relative rounded-xl"
-            style={{
-              opacity: 0,
-              transform: "translateY(40px)",
-              animation: "fadeInUp 0.8s ease-out forwards",
-            }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10"></div>
-            <div className="relative p-16">
-              <h3 className="text-4xl sm:text-5xl font-black mb-6 text-white">
-                Ready to Transform Your Coding Journey?
-              </h3>
-              {/* <p className="text-gray-300 mb-10 text-xl max-w-3xl mx-auto leading-relaxed">
-                Join thousands of students and professionals who are mastering competitive programming while staying
-                organized with their academic commitments.
-              </p> */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                {/* <Link to={user ? "/contestinfo" : "/login"}>
-                  <Button className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white px-10 py-4 text-lg font-bold rounded-full shadow-2xl hover:shadow-cyan-500/25 transition-all duration-300">
-                    Get Started Free
-                  </Button>
-                </Link> */}
+                </Link>
                 <Button
                   variant="outline"
-                  className="border-white/30 text-white hover:bg-white/10 px-10 py-4 text-lg font-bold rounded-full bg-transparent"
+                  size="lg"
+                  className="border-2 border-slate-600 text-slate-300 hover:bg-slate-800/50 hover:border-blue-500/50 px-10 py-4 rounded-xl font-semibold text-lg bg-slate-800/20 backdrop-blur-md transition-all duration-300 hover:scale-105 group hover:shadow-lg hover:shadow-slate-500/20"
                 >
+                  <Play className="w-5 h-5 mr-2 group-hover:text-blue-400 transition-colors duration-300" />
                   Watch Demo
                 </Button>
               </div>
+            </div>
+          </div>
+        </section>
+        {/* Main Features Section */}
+        <section className="px-4 py-24">
+          <div className="max-w-7xl mx-auto">
+            <div
+              className="text-center mb-20"
+              style={{
+                opacity: 0,
+                transform: "translateY(30px)",
+                animation: "fadeInUp 0.8s ease-out 0.4s forwards",
+              }}
+            >
+              <div className="inline-flex items-center bg-slate-800/50 backdrop-blur-md border border-purple-500/30 text-purple-300 px-4 py-2 rounded-full text-sm font-medium mb-6 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300">
+                <Award className="w-4 h-4 mr-2" />
+                Core Features
+              </div>
+              <h2 className="text-5xl lg:text-6xl font-bold text-slate-100 mb-6">
+                Everything You Need to{" "}
+                <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                  Excel
+                </span>
+              </h2>
+              <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+                Comprehensive tools designed specifically for competitive programmers and computer science students
+              </p>
+            </div>
+
+            <div className="grid gap-12 lg:grid-cols-1 max-w-5xl mx-auto">
+              {mainFeatures.map((feature, index) => (
+                <FeatureCard key={feature.title} {...feature} index={index} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Additional Features */}
+        <section className="px-4 py-24 bg-slate-800/20 backdrop-blur-md">
+          <div className="max-w-7xl mx-auto">
+            <div
+              className="text-center mb-16"
+              style={{
+                opacity: 0,
+                transform: "translateY(30px)",
+                animation: "fadeInUp 0.8s ease-out 0.6s forwards",
+              }}
+            >
+              <div className="inline-flex items-center bg-slate-800/50 backdrop-blur-md border border-green-500/30 text-green-300 px-4 py-2 rounded-full text-sm font-medium mb-6 hover:shadow-lg hover:shadow-green-500/20 transition-all duration-300">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Additional Features
+              </div>
+              <h2 className="text-4xl lg:text-5xl font-bold text-slate-100 mb-6">
+                More Tools to{" "}
+                <span className="bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                  Enhance
+                </span>{" "}
+                Your Journey
+              </h2>
+              <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+                Advanced features that make CodeRadar the ultimate coding companion
+              </p>
+            </div>
+
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              {additionalFeatures.map((feature, index) => (
+                <div
+                  key={feature.title}
+                  className="group bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 text-center hover:border-blue-500/30 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden"
+                  style={{
+                    opacity: 0,
+                    transform: "translateY(30px)",
+                    animation: `fadeInUp 0.6s ease-out ${0.8 + index * 0.1}s forwards`,
+                  }}
+                >
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="relative z-10">
+                    <div
+                      className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${feature.color} mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg`}
+                    >
+                      <feature.icon className="h-8 w-8 text-blue-400 group-hover:text-blue-300 transition-colors duration-300" />
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-100 mb-3 group-hover:text-white transition-colors duration-300">
+                      {feature.title}
+                    </h3>
+                    <p className="text-slate-400 group-hover:text-slate-300 transition-colors duration-300">
+                      {feature.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="px-4 py-24">
+          <div className="max-w-4xl mx-auto">
+            <div
+              className="text-center mb-16"
+              style={{
+                opacity: 0,
+                transform: "translateY(30px)",
+                animation: "fadeInUp 0.8s ease-out 1s forwards",
+              }}
+            >
+              <div className="inline-flex items-center bg-slate-800/50 backdrop-blur-md border border-yellow-500/30 text-yellow-300 px-4 py-2 rounded-full text-sm font-medium mb-6 hover:shadow-lg hover:shadow-yellow-500/20 transition-all duration-300">
+                <BookOpen className="w-4 h-4 mr-2" />
+                FAQ
+              </div>
+              <h2 className="text-4xl lg:text-5xl font-bold text-slate-100 mb-6">
+                Frequently Asked{" "}
+                <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
+                  Questions
+                </span>
+              </h2>
+              <p className="text-lg text-slate-400">Everything you need to know about CodeRadar</p>
+            </div>
+
+            <div className="space-y-6">
+              {faqData.map((faq, index) => (
+                <FAQItem key={index} question={faq.q} answer={faq.a} index={index} />
+              ))}
             </div>
           </div>
         </section>
@@ -421,48 +558,32 @@ export default function LandingPage() {
           }
         }
 
-        @keyframes fadeInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-60px);
+        @keyframes float-slow {
+          0%, 100% {
+            transform: translateY(0px) scale(1);
           }
-          to {
-            opacity: 1;
-            transform: translateX(0);
+          50% {
+            transform: translateY(-30px) scale(1.05);
           }
         }
 
-        @keyframes fadeInRight {
-          from {
-            opacity: 0;
-            transform: translateX(60px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        @keyframes scaleIn {
-          from {
-            opacity: 0;
-            transform: scale(0.8);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        @keyframes pulse {
+        @keyframes pulse-slow {
           0%, 100% {
             opacity: 0.3;
             transform: scale(1);
           }
           50% {
-            opacity: 0.5;
+            opacity: 0.6;
             transform: scale(1.1);
           }
+        }
+
+        .animate-float-slow {
+          animation: float-slow 8s ease-in-out infinite;
+        }
+
+        .animate-pulse-slow {
+          animation: pulse-slow 6s ease-in-out infinite;
         }
       `}</style>
     </div>
