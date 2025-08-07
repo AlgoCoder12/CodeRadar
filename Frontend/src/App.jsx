@@ -11,6 +11,7 @@ import Signup from "./pages/SignUp";
 import { useAuth } from "./contexts/AuthContext";
 import UserIdCheckPage from "./pages/UserIdCheckPage";
 import TimeTable from "./pages/TimeTable"
+import ForgotPassword from "./pages/ForgotPassword";
 
 
 export default function App() {
@@ -100,6 +101,7 @@ export default function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/timetable" element={<TimeTable/>} />
           <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/forgot-password" element={<ForgotPassword/>} />
         </Routes>
       </Layout>
     </div>
