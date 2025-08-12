@@ -36,6 +36,7 @@ export default function TimeTablePage() {
       }
     } finally {
       setLoading(false)
+      setSelectedFile(null);
     }
   }
 

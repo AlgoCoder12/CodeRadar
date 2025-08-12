@@ -1,0 +1,65 @@
+# Node/Vite (Frontend)
+node_modules/
+dist/
+build/
+.vite/
+*.log
+
+# Java/Maven (Backend)
+target/
+*.class
+*.jar
+*.war
+
+# IDE/Editor
+.idea/
+*.iml
+.vscode/
+*.suo
+*.user
+*.bak
+
+# OS/System
+.DS_Store
+Thumbs.db
+
+# Environment/Secrets
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Spring Boot secrets
+backend/src/main/resources/application.properties
+backend/src/main/resources/application-*.properties
+
+# Miscellaneous
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Test/Generated
+generated-sources/
+generated-test-sources/
+
+# Unused/Temp
+*.tmp
+*.swp
+*.swo
+
+# Public/Assets (if not needed)
+public/vite.svg
+src/assets/react.svg
+LOGO.png.png
+
+# Remove test scripts and collections if not needed
+test_api.md
+test-contests.ps1
+test-email-notifications.ps1
+test-enhanced-features.ps1
+test-leetcode-verification.ps1
+CodeRadar_Contest_API.postman_collection.json
