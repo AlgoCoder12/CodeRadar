@@ -1,7 +1,5 @@
-"use client"
-
+import { Loader2, Upload, FileText, X, Check, AlertCircle, Sparkles, Award, Cloud, Clock, MapPin, User, Calendar, Bell } from "lucide-react"
 import { useState } from "react"
-import { Loader2, Upload, FileText, X, Check, AlertCircle, CloudUpload, File, ImageIcon, FileType } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const FileUploader = ({ onFileUpload, onUpload, onCancel, selectedFile, loading }) => {
@@ -37,16 +35,16 @@ const FileUploader = ({ onFileUpload, onUpload, onCancel, selectedFile, loading 
     const extension = fileName?.split(".").pop()?.toLowerCase()
     switch (extension) {
       case "pdf":
-        return <FileType className="h-8 w-8 text-red-400" />
+        return "📄"
       case "doc":
       case "docx":
-        return <File className="h-8 w-8 text-blue-400" />
+        return "📝"
       case "jpg":
       case "jpeg":
       case "png":
-        return <ImageIcon className="h-8 w-8 text-green-400" />
+        return "🖼️"
       default:
-        return <FileText className="h-8 w-8 text-gray-400" />
+        return "📁"
     }
   }
 
@@ -59,35 +57,33 @@ const FileUploader = ({ onFileUpload, onUpload, onCancel, selectedFile, loading 
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-6">
-      {/* Main Upload Area */}
+    <div>
       <div
-        className={`relative group border-2 border-dashed rounded-3xl p-16 text-center transition-all duration-500 backdrop-blur-2xl ${
+        className={`group relative bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-2xl p-12 text-center transition-all duration-500 overflow-hidden ${
           isDragOver
-            ? "border-purple-400 bg-gradient-to-br from-purple-500/20 via-pink-500/15 to-cyan-500/20 scale-[1.02] shadow-2xl shadow-purple-500/25"
+            ? "border-purple-500/50 bg-purple-500/10 scale-105 shadow-2xl shadow-purple-500/20"
             : selectedFile
-              ? "border-emerald-400/60 bg-gradient-to-br from-emerald-500/10 via-green-500/5 to-teal-500/10 shadow-xl shadow-emerald-500/20"
-              : "border-white/30 bg-gradient-to-br from-white/10 via-white/5 to-transparent hover:border-purple-400/50 hover:bg-gradient-to-br hover:from-purple-500/10 hover:via-pink-500/5 hover:to-cyan-500/10"
-        } ${loading ? "pointer-events-none opacity-60" : "hover:scale-[1.01] cursor-pointer"}`}
+              ? "border-green-500/50 bg-green-500/5 shadow-xl shadow-green-500/10"
+              : "hover:border-purple-500/30 hover:bg-slate-800/60 hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-2"
+        } ${loading ? "pointer-events-none opacity-50" : ""}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        {/* Animated Background Particles */}
-        <div className="absolute inset-0 rounded-3xl overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+        {/* Animated Background Effect */}
+        <div className="absolute inset-0 rounded-2xl overflow-hidden">
           <div
-            className={`absolute inset-0 transition-opacity duration-500 ${isDragOver ? "opacity-100" : "opacity-0"}`}
-          >
-            <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-purple-500/20 rounded-full blur-xl animate-pulse"></div>
-            <div
-              className="absolute top-3/4 right-1/4 w-24 h-24 bg-pink-500/20 rounded-full blur-lg animate-pulse"
-              style={{ animationDelay: "1s" }}
-            ></div>
-            <div
-              className="absolute bottom-1/4 left-1/2 w-20 h-20 bg-cyan-500/20 rounded-full blur-md animate-pulse"
-              style={{ animationDelay: "2s" }}
-            ></div>
-          </div>
+            className={`absolute inset-0 bg-gradient-to-r transition-opacity duration-500 ${
+              isDragOver
+                ? "from-purple-500/20 to-pink-500/20 opacity-100"
+                : selectedFile
+                  ? "from-green-500/10 to-emerald-500/10 opacity-100"
+                  : "opacity-0"
+            }`}
+          />
         </div>
 
         <input
@@ -104,80 +100,70 @@ const FileUploader = ({ onFileUpload, onUpload, onCancel, selectedFile, loading 
           className={`relative z-10 cursor-pointer block ${loading ? "pointer-events-none" : ""}`}
         >
           <div className="space-y-8">
-            {/* Main Icon */}
+            {/* Icon Section */}
             <div className="flex justify-center">
               {loading ? (
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-full blur-2xl opacity-40 animate-pulse"></div>
-                  <div className="relative bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-xl rounded-full p-8 border border-white/30 shadow-2xl">
-                    <Loader2 className="h-16 w-16 text-white animate-spin" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full blur-lg opacity-50"></div>
+                  <div className="relative bg-slate-800/60 backdrop-blur-md rounded-full p-6 border border-purple-500/30">
+                    <Loader2 className="h-16 w-16 text-purple-400 animate-spin" />
                   </div>
                 </div>
               ) : selectedFile ? (
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full blur-2xl opacity-40 animate-pulse"></div>
-                  <div className="relative bg-gradient-to-br from-emerald-500/20 to-teal-500/20 backdrop-blur-xl rounded-full p-8 border border-emerald-400/40 shadow-2xl">
-                    <Check className="h-16 w-16 text-emerald-400" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full blur-lg opacity-50"></div>
+                  <div className="relative bg-slate-800/60 backdrop-blur-md rounded-full p-6 border border-green-500/30">
+                    <Check className="h-16 w-16 text-green-400" />
                   </div>
                 </div>
               ) : isDragOver ? (
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-full blur-2xl opacity-60 animate-pulse"></div>
-                  <div className="relative bg-gradient-to-br from-purple-500/20 to-cyan-500/20 backdrop-blur-xl rounded-full p-8 border border-purple-400/50 shadow-2xl animate-bounce">
-                    <CloudUpload className="h-16 w-16 text-purple-300" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur-lg opacity-70"></div>
+                  <div className="relative bg-slate-800/60 backdrop-blur-md rounded-full p-6 border border-purple-500/30">
+                    <Upload className="h-16 w-16 text-purple-400" />
                   </div>
                 </div>
               ) : (
-                <div className="relative group-hover:scale-110 transition-transform duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full blur-2xl opacity-0 group-hover:opacity-30 transition-opacity duration-500"></div>
-                  <div className="relative bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl rounded-full p-8 border border-white/30 group-hover:border-purple-400/50 shadow-xl group-hover:shadow-2xl transition-all duration-300">
-                    <Upload className="h-16 w-16 text-gray-300 group-hover:text-purple-300 transition-colors duration-300" />
+                <div className="relative group/icon">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full blur-lg opacity-0 group-hover/icon:opacity-50 transition-opacity duration-300"></div>
+                  <div className="relative bg-slate-800/60 backdrop-blur-md rounded-full p-6 border border-slate-600/50 group-hover/icon:border-purple-500/30 transition-all duration-300 group-hover/icon:scale-110">
+                    <FileText className="h-16 w-16 text-slate-400 group-hover/icon:text-purple-400 transition-colors duration-300" />
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Main Text */}
+            {/* Text Section */}
             <div className="space-y-4">
               {loading ? (
                 <>
-                  <h3 className="text-3xl font-black text-white">Processing Magic ✨</h3>
-                  <p className="text-lg text-gray-300 max-w-md mx-auto leading-relaxed">
-                    We're analyzing your timetable and preparing something amazing...
-                  </p>
+                  <p className="text-3xl font-bold text-slate-100">Processing your file...</p>
+                  <p className="text-xl text-slate-300">Please wait while we upload your timetable</p>
                 </>
               ) : selectedFile ? (
                 <>
-                  <h3 className="text-3xl font-black text-emerald-400">Ready to Launch! 🚀</h3>
-                  <p className="text-lg text-gray-300 max-w-md mx-auto leading-relaxed">
-                    Your file is locked and loaded. Hit upload to process your timetable!
-                  </p>
+                  <p className="text-3xl font-bold text-green-400">File Ready to Upload!</p>
+                  <p className="text-xl text-slate-300">Click upload to process your timetable</p>
                 </>
               ) : isDragOver ? (
                 <>
-                  <h3 className="text-3xl font-black text-purple-300 animate-pulse">Drop it Now! 🎯</h3>
-                  <p className="text-lg text-gray-300 max-w-md mx-auto leading-relaxed">
-                    Release to select your awesome timetable file
-                  </p>
+                  <p className="text-3xl font-bold text-purple-400">Drop it like it's hot! 🔥</p>
+                  <p className="text-xl text-slate-300">Release to select your timetable file</p>
                 </>
               ) : (
                 <>
-                  <h3 className="text-3xl font-black bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent">
-                    Drop Your Timetable Here
-                  </h3>
-                  <p className="text-lg text-gray-300 max-w-md mx-auto leading-relaxed">
-                    Drag & drop your file or <span className="text-purple-400 font-semibold">click to browse</span>
-                  </p>
+                  <p className="text-3xl font-bold text-slate-100">Drop your timetable here</p>
+                  <p className="text-xl text-slate-300">or click to browse files</p>
                 </>
               )}
             </div>
 
             {/* Supported Formats */}
-            <div className="flex flex-wrap justify-center gap-3">
-              {["PDF", "DOC", "DOCX", "JPG", "PNG"].map((format) => (
+            <div className="flex justify-center flex-wrap gap-3">
+              {["PDF", "DOC", "DOCX", "Images"].map((format) => (
                 <span
                   key={format}
-                  className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 text-sm font-medium text-gray-300 hover:bg-white/20 hover:border-purple-400/50 hover:text-purple-300 transition-all duration-300"
+                  className="px-4 py-2 bg-slate-800/60 backdrop-blur-md border border-slate-600/50 rounded-full text-sm font-medium text-slate-300 hover:border-purple-500/30 hover:text-purple-300 transition-all duration-300"
                 >
                   {format}
                 </span>
@@ -187,82 +173,95 @@ const FileUploader = ({ onFileUpload, onUpload, onCancel, selectedFile, loading 
         </label>
       </div>
 
-      {/* Selected File Display */}
+      {/* Selected File Info */}
       {selectedFile && !loading && (
-        <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl border border-white/20 rounded-2xl p-8 shadow-xl">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-white/10 rounded-xl border border-white/20">{getFileIcon(selectedFile.name)}</div>
-              <div>
-                <h4 className="text-xl font-bold text-white truncate max-w-sm">{selectedFile.name}</h4>
-                <p className="text-sm text-gray-400 font-medium">{formatFileSize(selectedFile.size)}</p>
+        <div
+          className="mb-8"
+          style={{
+            opacity: 0,
+            transform: "translateY(30px)",
+            animation: "fadeInUp 0.8s ease-out 0.8s forwards",
+          }}
+        >
+          <div className="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8 hover:border-green-500/30 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-500">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                <div className="flex-shrink-0 p-3 bg-slate-800/60 backdrop-blur-md rounded-xl border border-slate-600/50">
+                  <span className="text-3xl">{getFileIcon(selectedFile.name)}</span>
+                </div>
+                <div>
+                  <p className="font-bold text-slate-100 text-lg truncate max-w-xs">{selectedFile.name}</p>
+                  <p className="text-slate-400">{formatFileSize(selectedFile.size)}</p>
+                </div>
               </div>
+              <button
+                onClick={onCancel}
+                className="p-3 hover:bg-slate-800/60 rounded-xl transition-all duration-300 text-slate-400 hover:text-slate-100 hover:scale-110"
+              >
+                <X className="h-6 w-6" />
+              </button>
             </div>
-            <button
-              onClick={onCancel}
-              className="p-3 hover:bg-white/10 rounded-xl transition-all duration-300 text-gray-400 hover:text-white hover:scale-110 group"
-            >
-              <X className="h-6 w-6 group-hover:rotate-90 transition-transform duration-300" />
-            </button>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-4">
-            <Button
-              onClick={() => onUpload(selectedFile)}
-              className="flex-1 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 hover:from-purple-700 hover:via-pink-700 hover:to-cyan-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25 flex items-center justify-center space-x-3 text-lg"
-              disabled={loading}
-            >
-              <Upload className="h-6 w-6" />
-              <span>Upload Timetable</span>
-            </Button>
-            <Button
-              onClick={onCancel}
-              variant="outline"
-              className="px-8 py-4 bg-white/10 border-2 border-white/30 text-white hover:bg-white/20 hover:border-white/50 font-bold rounded-xl transition-all duration-300 hover:scale-105 text-lg"
-              disabled={loading}
-            >
-              Cancel
-            </Button>
+            {/* Action Buttons */}
+            <div className="flex gap-4">
+              <Button
+                onClick={() => onUpload(selectedFile)}
+                className="flex-1 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 hover:from-purple-700 hover:via-pink-700 hover:to-cyan-700 text-white font-semibold py-4 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25 flex items-center justify-center space-x-3 text-lg relative overflow-hidden group"
+                disabled={loading}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-cyan-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <Upload className="h-6 w-6 relative z-10" />
+                <span className="relative z-10">Upload Timetable</span>
+              </Button>
+              <Button
+                onClick={onCancel}
+                className="px-8 py-4 bg-slate-800/60 backdrop-blur-md border border-slate-600/50 text-slate-300 hover:bg-slate-800/80 hover:border-slate-500/50 hover:text-slate-100 font-semibold rounded-xl transition-all duration-300 hover:scale-105"
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Enhanced Loading State */}
+      {/* Loading State */}
       {loading && (
-        <div className="bg-gradient-to-br from-purple-500/10 via-pink-500/5 to-cyan-500/10 backdrop-blur-2xl border border-purple-400/30 rounded-2xl p-8 shadow-2xl">
-          <div className="text-center space-y-6">
-            <div className="flex items-center justify-center space-x-4">
+        <div
+          className="mb-8"
+          style={{
+            opacity: 0,
+            transform: "translateY(30px)",
+            animation: "fadeInUp 0.8s ease-out 0.8s forwards",
+          }}
+        >
+          <div className="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-2xl p-8">
+            <div className="flex items-center justify-center space-x-4 mb-6">
               <Loader2 className="h-8 w-8 text-purple-400 animate-spin" />
-              <span className="text-xl font-bold text-white">Processing your timetable...</span>
+              <span className="text-slate-100 font-semibold text-xl">Processing your timetable...</span>
             </div>
-
-            {/* Enhanced Progress Bar */}
-            <div className="relative">
-              <div className="bg-white/10 rounded-full h-3 overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-full animate-pulse shadow-lg"></div>
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 rounded-full blur-sm"></div>
+            <div className="bg-slate-800/60 rounded-full h-3 overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-full animate-pulse"></div>
             </div>
-
-            <p className="text-gray-300 text-sm">This usually takes just a few seconds...</p>
           </div>
         </div>
       )}
 
-      {/* Enhanced Help Section */}
-      <div className="text-center space-y-4">
-        <div className="inline-flex items-center space-x-3 px-6 py-3 bg-white/5 backdrop-blur-sm rounded-full border border-white/20">
-          <AlertCircle className="h-5 w-5 text-cyan-400" />
-          <span className="text-sm text-gray-300 font-medium">
-            Maximum file size: <span className="text-purple-400 font-bold">10MB</span>
+      {/* Help Text */}
+      <div
+        className="text-center"
+        style={{
+          opacity: 0,
+          transform: "translateY(30px)",
+          animation: "fadeInUp 0.8s ease-out 1s forwards",
+        }}
+      >
+        <div className="inline-flex items-center space-x-3 bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-xl px-6 py-4 hover:border-yellow-500/30 hover:shadow-lg hover:shadow-yellow-500/10 transition-all duration-300">
+          <AlertCircle className="h-5 w-5 text-yellow-400" />
+          <span className="text-slate-300 font-medium">
+            Supported formats: PDF, DOC, DOCX, JPG, PNG (Max 10MB)
           </span>
         </div>
-
-        <p className="text-xs text-gray-500 max-w-md mx-auto leading-relaxed">
-          Upload your class schedule in any supported format. We'll automatically extract and organize your timetable
-          data.
-        </p>
       </div>
     </div>
   )

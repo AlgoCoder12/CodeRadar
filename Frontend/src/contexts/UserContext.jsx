@@ -36,7 +36,7 @@ export const UserProvider = ({ children }) => {
     const getTimeTable = async() => {
     try {
       const res = await axios.get(`${url}/api/schedule/my`, {headers: {Authorization: `Bearer ${token}`}});
-      console.log(res)
+      // console.log(res)
       if (res.status === 200) {
         setTimeTable(res.data);
         // console.log("timeTbale", timeTable)
